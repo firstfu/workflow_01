@@ -10,6 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run start` - 啟動生產環境伺服器
 - `npm run lint` - 執行 ESLint 檢查
 
+### 環境配置
+開發前需要設定環境變數：
+1. 複製 `.env.local.example` 為 `.env.local`
+2. 設定 `OPENAI_API_KEY` 以啟用 AI 功能
+3. 可選設定：LLM_MODEL, LLM_MAX_TOKENS, LLM_TEMPERATURE 等
+
 ### 測試開發
 開發伺服器預設在 http://localhost:3000 執行
 
@@ -20,9 +26,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案架構
 
-這是一個組織架構圖應用程式，使用 Next.js 15.4.5 與 App Router，技術棧包含 TypeScript、React 19 和 Tailwind CSS v4。
+這是一個 AI 智能組織架構圖應用程式，使用 Next.js 15.4.5 與 App Router，技術棧包含 TypeScript、React 19 和 Tailwind CSS v4。
 
 ### 主要功能
+- **AI 智能功能**：組織分析、智能問答助手、職位描述生成（依賴 OpenAI API）
 - 互動式組織架構圖，支援拖拽、縮放、自動排版
 - 拖拽操作：節點間拖拽可選擇「替換資料」或「交換資料」，支援拖拽狀態管理
 - 員工資料管理 (新增、編輯、刪除)
@@ -36,6 +43,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - `OrgChart.tsx` - 主要元件，整合 ReactFlow 與工具列功能
   - `CustomNode.tsx` - 自定義節點元件，用於顯示員工資訊
   - `useOrgChartStore.ts` - Zustand 狀態管理，處理節點/邊資料與操作
+- `app/components/LLM/` - AI 智能功能模組
+  - `LLMPanel.tsx` - AI 功能主面板
+  - `AnalysisPanel.tsx` - 組織分析面板
+  - `ChatAssistant.tsx` - 智能問答助手
+  - `JobDescriptionGenerator.tsx` - 職位描述生成器
+- `app/api/llm/` - LLM API 路由
+  - `analyze/route.ts` - 組織分析 API
+  - `chat/route.ts` - 智能問答 API
+  - `job-description/route.ts` - 職位描述生成 API
 
 ### 狀態管理
 - 使用 Zustand 管理全域狀態
