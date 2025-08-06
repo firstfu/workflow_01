@@ -64,6 +64,14 @@ export interface Employee extends Record<string, unknown> {
   email: string;
   avatar?: string;
   level: number;
+  // 擴展資訊
+  phone?: string;
+  location?: string;
+  hireDate?: string;
+  skills?: string[];
+  bio?: string;
+  manager?: string; // Manager ID
+  directReports?: string[]; // Direct report IDs
 }
 
 interface OrgChartState {
@@ -76,6 +84,13 @@ interface OrgChartState {
   // 部門管理
   departments: Department[];
   selectedDepartments: Set<string>; // 篩選選中的部門
+  
+  // 搜索功能
+  searchQuery: string;
+  searchResults: string[]; // 匹配的員工 ID 列表
+  
+  // 主題設定
+  theme: 'light' | 'dark';
   
   setNodes: (nodes: Node<Employee>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -110,6 +125,16 @@ interface OrgChartState {
   clearDepartmentFilter: () => void;
   getFilteredNodes: () => Node<Employee>[];
   getDepartmentStats: () => Record<string, number>;
+  
+  // 搜索功能方法
+  setSearchQuery: (query: string) => void;
+  searchEmployees: (query: string) => string[];
+  clearSearch: () => void;
+  getSearchFilteredNodes: () => Node<Employee>[];
+  highlightSearchResults: (nodeId: string) => boolean;
+  
+  // 主題方法
+  setTheme: (theme: 'light' | 'dark') => void;
   
   // 私有屬性
   _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null;
@@ -176,6 +201,13 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
     }
   ],
   selectedDepartments: new Set<string>(),
+  
+  // 搜索狀態初始化
+  searchQuery: '',
+  searchResults: [],
+  
+  // 主題初始化
+  theme: 'light',
 
   nodes: [
     // Level 1 - CEO
@@ -190,6 +222,11 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
         department: '執行長室',
         email: 'ceo@techflow.com',
         level: 1,
+        phone: '+886-2-1234-5678',
+        location: '台北總部 - 12F',
+        hireDate: '2019-01-15',
+        skills: ['策略規劃', '領導管理', '商務談判', '投資決策'],
+        bio: '具有15年軟體業經驗，曾任職於多家知名科技公司，專精於企業數位轉型與策略規劃。',
       },
     },
 
@@ -205,6 +242,11 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
         department: '技術部',
         email: 'cto@techflow.com',
         level: 2,
+        phone: '+886-2-1234-5679',
+        location: '台北總部 - 8F',
+        hireDate: '2019-03-01',
+        skills: ['系統架構', 'Cloud Computing', 'DevOps', '團隊管理', 'React', 'Node.js'],
+        bio: '擁有12年全端開發經驗，專精於大規模系統設計與雲端架構，帶領技術團隊打造高效能產品。',
       },
     },
     {
@@ -908,6 +950,68 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
     });
     
     return stats;
+  },
+
+  // 搜索功能實作
+  setSearchQuery: (query) => {
+    set({ searchQuery: query });
+    if (query.trim()) {
+      get().searchEmployees(query);
+    } else {
+      set({ searchResults: [] });
+    }
+  },
+
+  searchEmployees: (query) => {
+    const { nodes } = get();
+    const lowerQuery = query.toLowerCase().trim();
+    
+    if (!lowerQuery) {
+      set({ searchResults: [] });
+      return [];
+    }
+
+    const matchedIds = nodes
+      .filter(node => {
+        const employee = node.data;
+        return (
+          employee.name.toLowerCase().includes(lowerQuery) ||
+          employee.position.toLowerCase().includes(lowerQuery) ||
+          employee.department.toLowerCase().includes(lowerQuery) ||
+          employee.email.toLowerCase().includes(lowerQuery)
+        );
+      })
+      .map(node => node.id);
+
+    set({ searchResults: matchedIds });
+    return matchedIds;
+  },
+
+  clearSearch: () => {
+    set({ searchQuery: '', searchResults: [] });
+  },
+
+  getSearchFilteredNodes: () => {
+    const { searchResults, searchQuery } = get();
+    const visibleNodes = get().getVisibleNodes();
+    
+    // 如果沒有搜索關鍵字，返回所有可見節點
+    if (!searchQuery.trim()) {
+      return visibleNodes;
+    }
+    
+    // 如果有搜索關鍵字，只返回匹配的節點
+    return visibleNodes.filter(node => searchResults.includes(node.id));
+  },
+
+  highlightSearchResults: (nodeId) => {
+    const { searchResults, searchQuery } = get();
+    return searchQuery.trim() !== '' && searchResults.includes(nodeId);
+  },
+
+  // 主題功能實作
+  setTheme: (theme) => {
+    set({ theme });
   },
 }));
 

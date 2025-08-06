@@ -66,7 +66,8 @@ import {
   Grid3x3,
   Filter,
   X,
-  FolderCog
+  FolderCog,
+  Search
 } from 'lucide-react';
 
 const OrgChartContent = () => {
@@ -87,27 +88,52 @@ const OrgChartContent = () => {
     clearDepartmentFilter,
     getFilteredNodes,
     getDepartmentStats,
+    // 搜索功能
+    searchQuery,
+    searchResults,
+    setSearchQuery,
+    clearSearch,
+    getSearchFilteredNodes,
+    highlightSearchResults,
+    // 主題功能
+    theme,
+    setTheme,
   } = useOrgChartStore();
   
-  // 先獲取可見節點，再應用部門篩選
-  const visibleNodes = getVisibleNodes();
-  const filteredNodes = selectedDepartments.size > 0 
-    ? visibleNodes.filter(node => selectedDepartments.has(node.data.department))
-    : visibleNodes;
+  // 應用搜索和部門篩選
+  const searchFilteredNodes = getSearchFilteredNodes();
+  const departmentFilteredNodes = selectedDepartments.size > 0 
+    ? searchFilteredNodes.filter(node => selectedDepartments.has(node.data.department))
+    : searchFilteredNodes;
   
-  const nodes = filteredNodes;
+  const nodes = departmentFilteredNodes;
   const edges = getVisibleEdges().filter(edge => 
-    filteredNodes.some(n => n.id === edge.source) && 
-    filteredNodes.some(n => n.id === edge.target)
+    departmentFilteredNodes.some(n => n.id === edge.source) && 
+    departmentFilteredNodes.some(n => n.id === edge.target)
   );
   
   const reactFlowInstance = useReactFlow();
   const [showGrid, setShowGrid] = useState(true);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [dragAction, setDragAction] = useState<{ sourceId: string; targetId: string; action: 'replace' | 'swap' } | null>(null);
   const [showDragModal, setShowDragModal] = useState(false);
   const [showDepartmentFilter, setShowDepartmentFilter] = useState(false);
   const [showDepartmentManager, setShowDepartmentManager] = useState(false);
+  
+  // 主題相關的樣式類別
+  const themeClasses = {
+    panel: theme === 'dark' 
+      ? 'bg-gray-800/90 backdrop-blur-sm border border-gray-700' 
+      : 'bg-white/90 backdrop-blur-sm',
+    text: theme === 'dark' ? 'text-gray-200' : 'text-gray-800',
+    textSecondary: theme === 'dark' ? 'text-gray-400' : 'text-gray-600',
+    border: theme === 'dark' ? 'border-gray-600' : 'border-gray-300',
+    button: theme === 'dark' 
+      ? 'hover:bg-gray-700 text-gray-300 hover:text-gray-100' 
+      : 'hover:bg-gray-100 text-gray-600 hover:text-blue-600',
+    input: theme === 'dark'
+      ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400'
+      : 'bg-white border-gray-300 text-gray-800 placeholder-gray-500'
+  };
   
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
@@ -407,7 +433,11 @@ const OrgChartContent = () => {
   }, []);
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className={`w-full h-screen transition-colors duration-300 ${
+      theme === 'dark' 
+        ? 'bg-gradient-to-br from-gray-900 to-gray-800' 
+        : 'bg-gradient-to-br from-gray-50 to-gray-100'
+    }`}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -434,51 +464,51 @@ const OrgChartContent = () => {
           },
         }}
       >
-        <Panel position="top-left" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 m-4">
+        <Panel position="top-left" className={`${themeClasses.panel} rounded-lg shadow-lg p-3 m-4`}>
           <div className="flex gap-2">
             <button
               onClick={handleAddEmployee}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              className={`p-2 rounded-lg transition-colors group ${themeClasses.button}`}
               title="新增員工"
             >
-              <UserPlus className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+              <UserPlus className="w-5 h-5" />
             </button>
             
-            <div className="w-px bg-gray-300" />
+            <div className={`w-px ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'}`} />
             
             <button
               onClick={handleAutoLayout}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              className={`p-2 rounded-lg transition-colors group ${themeClasses.button}`}
               title="自動排版"
             >
-              <Layout className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+              <Layout className="w-5 h-5" />
             </button>
             
             <button
               onClick={handleFitView}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              className={`p-2 rounded-lg transition-colors group ${themeClasses.button}`}
               title="適應視窗"
             >
-              <Maximize2 className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+              <Maximize2 className="w-5 h-5" />
             </button>
             
             <button
               onClick={handleZoomIn}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              className={`p-2 rounded-lg transition-colors group ${themeClasses.button}`}
               title="放大"
             >
-              <ZoomIn className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+              <ZoomIn className="w-5 h-5" />
             </button>
             
             <button
               onClick={handleZoomOut}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              className={`p-2 rounded-lg transition-colors group ${themeClasses.button}`}
               title="縮小"
             >
-              <ZoomOut className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+              <ZoomOut className="w-5 h-5" />
             </button>
             
-            <div className="w-px bg-gray-300" />
+            <div className={`w-px ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'}`} />
             
             <button
               onClick={() => setShowGrid(!showGrid)}
@@ -496,7 +526,7 @@ const OrgChartContent = () => {
               <Palette className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
             </button>
             
-            <div className="w-px bg-gray-300" />
+            <div className={`w-px ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'}`} />
             
             <div className="relative">
               <button
@@ -572,7 +602,7 @@ const OrgChartContent = () => {
               <FolderCog className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
             </button>
             
-            <div className="w-px bg-gray-300" />
+            <div className={`w-px ${theme === 'dark' ? 'bg-gray-600' : 'bg-gray-300'}`} />
             
             <button
               onClick={handleExport}
@@ -592,15 +622,54 @@ const OrgChartContent = () => {
           </div>
         </Panel>
         
-        <Panel position="top-center" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-6 py-3 m-4">
-          <h1 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <Settings className="w-5 h-5" />
-            組織架構圖
-          </h1>
+        <Panel position="top-center" className={`${themeClasses.panel} rounded-lg shadow-lg px-6 py-3 m-4`}>
+          <div className="flex items-center gap-4">
+            <h1 className={`text-xl font-bold ${themeClasses.text} flex items-center gap-2`}>
+              <Settings className="w-5 h-5" />
+              組織架構圖
+            </h1>
+            
+            {/* 搜索框 */}
+            <div className="relative">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="搜索員工、職位、部門..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className={`pl-10 pr-8 py-2 text-sm ${themeClasses.input} rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-w-[250px]`}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={clearSearch}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full"
+                    title="清除搜索"
+                  >
+                    <X className="w-3 h-3 text-gray-400" />
+                  </button>
+                )}
+              </div>
+              
+              {/* 搜索結果提示 */}
+              {searchQuery && (
+                <div className={`absolute top-12 left-0 ${theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'} border rounded-lg shadow-lg p-2 z-50 min-w-[250px]`}>
+                  <div className={`text-sm ${themeClasses.textSecondary}`}>
+                    找到 <span className="font-semibold text-blue-600">{searchResults.length}</span> 位員工
+                    {searchResults.length > 0 && (
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({searchResults.length === 1 ? '已高亮顯示' : '已篩選顯示'})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         </Panel>
         
-        <Panel position="bottom-left" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-4 py-2 m-4">
-          <div className="text-sm text-gray-600">
+        <Panel position="bottom-left" className={`${themeClasses.panel} rounded-lg shadow-lg px-4 py-2 m-4`}>
+          <div className={`text-sm ${themeClasses.textSecondary}`}>
             節點數: <span className="font-semibold">{nodes.length}</span> / <span className="font-semibold">{allNodes.length}</span> |
             連線數: <span className="font-semibold ml-1">{edges.length}</span> / <span className="font-semibold">{allEdges.length}</span>
           </div>

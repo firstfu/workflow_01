@@ -44,10 +44,11 @@
 
 import React, { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move, ChevronDown, ChevronRight } from "lucide-react";
+import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move, ChevronDown, ChevronRight, Eye } from "lucide-react";
 import { Employee } from "./useOrgChartStore";
 import useOrgChartStore from "./useOrgChartStore";
 import EditModal from "./EditModal";
+import EmployeeDetailModal from "./EmployeeDetailModal";
 import DepartmentIcon from "./DepartmentIcon";
 import { getDepartmentColor, getDepartmentBadgeClasses, getDepartmentColorDot } from "./departmentUtils";
 
@@ -70,16 +71,20 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     toggleNodeCollapse,
     isNodeCollapsed,
     departments,
-    getDepartmentByName
+    getDepartmentByName,
+    highlightSearchResults,
+    theme
   } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
+  const [showDetailModal, setShowDetailModal] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragOver, setDragOver] = React.useState(false);
   
   const collapsed = isNodeCollapsed(data.id);
   const hasChildren = edges.some(edge => edge.source === data.id);
   const department = getDepartmentByName(data.department);
+  const isHighlighted = highlightSearchResults(data.id);
 
   // 添加全域 mouseup 監聽器以確保狀態正確重置
   React.useEffect(() => {
@@ -96,6 +101,16 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
 
   const handleNodeClick = () => {
     setSelectedNode(data.id);
+  };
+
+  const handleDoubleClick = () => {
+    setShowDetailModal(true);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowDetailModal(true);
+    setShowMenu(false);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -261,6 +276,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         isDragging ? "opacity-60 scale-110 shadow-2xl ring-2 ring-blue-400 ring-opacity-50 z-50" : ""
       } ${dragOver ? "ring-2 ring-green-400 ring-opacity-70 scale-105" : ""}`}
       onClick={handleNodeClick}
+      onDoubleClick={handleDoubleClick}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -272,9 +288,23 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
       <Handle type="target" position={Position.Top} className="!bg-transparent !border-0 !w-3 !h-3" />
 
       <div
-        className={`bg-white rounded-xl shadow-xl p-4 min-w-[240px] border-2 ${
-          selected ? "border-blue-400" : "border-transparent"
-        } hover:shadow-2xl transition-all duration-200 cursor-pointer`}
+        className={`rounded-xl shadow-xl p-4 min-w-[240px] border-2 transition-all duration-200 cursor-pointer ${
+          theme === 'dark' 
+            ? 'bg-gray-800 text-gray-200 shadow-gray-900/50' 
+            : 'bg-white text-gray-900'
+        } ${
+          selected 
+            ? "border-blue-400" 
+            : isHighlighted 
+              ? theme === 'dark'
+                ? "border-yellow-400 bg-yellow-900/20 ring-2 ring-yellow-400 ring-opacity-30"
+                : "border-yellow-400 bg-yellow-50 ring-2 ring-yellow-300 ring-opacity-50"
+              : "border-transparent"
+        } hover:shadow-2xl ${
+          isHighlighted 
+            ? theme === 'dark' ? "shadow-yellow-400/20" : "shadow-yellow-200" 
+            : ""
+        }`}
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-2">
@@ -339,16 +369,22 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
             </button>
 
             {showMenu && (
-              <div className="absolute right-0 top-8 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50 min-w-[140px]">
-                <button onClick={handleEdit} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+              <div className={`absolute right-0 top-8 rounded-lg shadow-xl border py-1 z-50 min-w-[140px] ${
+                theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <button onClick={handleViewDetails} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
+                  <Eye className="w-3 h-3" />
+                  查看詳細
+                </button>
+                <button onClick={handleEdit} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                   <Edit className="w-3 h-3" />
                   編輯
                 </button>
-                <button onClick={handleAddSubordinate} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                <button onClick={handleAddSubordinate} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                   <UserPlus className="w-3 h-3" />
                   新增下屬
                 </button>
-                <button onClick={handleDelete} className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600">
+                <button onClick={handleDelete} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 text-red-600`}>
                   <Trash2 className="w-3 h-3" />
                   刪除
                 </button>
@@ -358,8 +394,8 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         </div>
 
         <div className="space-y-1">
-          <h3 className="font-bold text-gray-900 text-base">{data.name}</h3>
-          <p className="text-sm font-medium text-gray-700">{data.position}</p>
+          <h3 className={`font-bold text-base ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{data.name}</h3>
+          <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{data.position}</p>
 
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-2">
@@ -382,7 +418,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-xs text-gray-500">
+          <div className={`flex items-center gap-1 text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             <Mail className="w-3 h-3" />
             <span className="truncate">{data.email}</span>
           </div>
@@ -407,6 +443,16 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         employee={data}
         onSave={handleSaveEdit}
         onCancel={handleCancelEdit}
+      />
+      
+      <EmployeeDetailModal
+        isOpen={showDetailModal}
+        employee={data}
+        onClose={() => setShowDetailModal(false)}
+        onEdit={(employee) => {
+          setShowDetailModal(false);
+          setShowEditModal(true);
+        }}
       />
     </div>
   );
