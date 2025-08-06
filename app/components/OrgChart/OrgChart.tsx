@@ -81,9 +81,9 @@ const OrgChartContent = () => {
     if (rootNodes.length === 0) return;
     
     // 布局配置
-    const horizontalSpacing = 420; // 同層節點之間的水平間距（增加間距）
-    const verticalSpacing = 200;   // 層級之間的垂直間距（增加間距）
-    const startY = 80;
+    const horizontalSpacing = 650; // 同層節點之間的水平間距（大幅增加間距）
+    const verticalSpacing = 220;   // 層級之間的垂直間距（適度增加間距）
+    const startY = 100;
     
     // 儲存計算後的位置
     const nodePositions = new Map<string, { x: number; y: number }>();
@@ -152,7 +152,7 @@ const OrgChartContent = () => {
     
     // 計算起始位置，使樹居中
     const totalWidth = tree.width * horizontalSpacing;
-    const startX = 800 - totalWidth / 2; // 假設畫布寬度約1600
+    const startX = 1200 - totalWidth / 2; // 調整畫布中心點以適應更寬的布局
     
     setPositions(tree, startX, startY);
     
@@ -277,11 +277,11 @@ const OrgChartContent = () => {
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{
-          type: 'step',
+          type: 'default',
           animated: false,
           style: {
             strokeWidth: 2,
-            stroke: '#374151',
+            stroke: '#6B7280',
           },
         }}
       >
