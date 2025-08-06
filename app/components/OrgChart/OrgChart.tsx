@@ -65,8 +65,10 @@ import {
 
 const OrgChartContent = () => {
   const {
-    nodes,
-    edges,
+    nodes: allNodes,
+    edges: allEdges,
+    getVisibleNodes,
+    getVisibleEdges,
     onNodesChange: originalOnNodesChange,
     onEdgesChange,
     onConnect,
@@ -74,6 +76,9 @@ const OrgChartContent = () => {
     setAutoLayoutCallback,
     isDraggingNode,
   } = useOrgChartStore();
+  
+  const nodes = getVisibleNodes();
+  const edges = getVisibleEdges();
   
   const reactFlowInstance = useReactFlow();
   const [showGrid, setShowGrid] = useState(true);
@@ -248,7 +253,7 @@ const OrgChartContent = () => {
   }, [reactFlowInstance]);
   
   const handleAddEmployee = useCallback(() => {
-    const newId = (Math.max(...nodes.map(n => parseInt(n.id)), 0) + 1).toString();
+    const newId = (Math.max(...allNodes.map(n => parseInt(n.id)), 0) + 1).toString();
     const newEmployee = {
       id: newId,
       name: '新員工',
@@ -262,12 +267,12 @@ const OrgChartContent = () => {
     setTimeout(() => {
       handleAutoLayout();
     }, 300);
-  }, [nodes, addEmployee, handleAutoLayout]);
+  }, [allNodes, addEmployee, handleAutoLayout]);
   
   const handleExport = useCallback(() => {
     const data = {
-      nodes,
-      edges,
+      nodes: allNodes,
+      edges: allEdges,
       timestamp: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -277,7 +282,7 @@ const OrgChartContent = () => {
     a.download = `org-chart-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [nodes, edges]);
+  }, [allNodes, allEdges]);
   
   const handleImport = useCallback(() => {
     const input = document.createElement('input');
@@ -492,8 +497,8 @@ const OrgChartContent = () => {
         
         <Panel position="bottom-left" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg px-4 py-2 m-4">
           <div className="text-sm text-gray-600">
-            節點數: <span className="font-semibold">{nodes.length}</span> | 
-            連線數: <span className="font-semibold ml-1">{edges.length}</span>
+            節點數: <span className="font-semibold">{nodes.length}</span> / <span className="font-semibold">{allNodes.length}</span> |
+            連線數: <span className="font-semibold ml-1">{edges.length}</span> / <span className="font-semibold">{allEdges.length}</span>
           </div>
         </Panel>
         

@@ -63,6 +63,7 @@ interface OrgChartState {
   edges: Edge[];
   selectedNode: string | null;
   isDraggingNode: boolean;
+  collapsedNodes: Set<string>;
   
   setNodes: (nodes: Node<Employee>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -81,6 +82,11 @@ interface OrgChartState {
   setAutoLayoutCallback: (callback: () => void) => void;
   setIsDraggingNode: (isDragging: boolean) => void;
   setOnNodeDropCallback: (callback: (sourceId: string, targetId: string) => void) => void;
+  
+  toggleNodeCollapse: (nodeId: string) => void;
+  isNodeCollapsed: (nodeId: string) => boolean;
+  getVisibleNodes: () => Node<Employee>[];
+  getVisibleEdges: () => Edge[];
   
   // 私有屬性
   _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null;
@@ -164,6 +170,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   
   selectedNode: null,
   isDraggingNode: false,
+  collapsedNodes: new Set<string>(),
   
   // 儲存自動排版的回調函數
   _autoLayoutCallback: null as (() => void) | null,
@@ -335,6 +342,63 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   
   setOnNodeDropCallback: (callback) => {
     set({ _onNodeDropCallback: callback } as Partial<OrgChartState & { _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null }>);
+  },
+
+  toggleNodeCollapse: (nodeId) => {
+    set((state) => {
+      const newCollapsedNodes = new Set(state.collapsedNodes);
+      if (newCollapsedNodes.has(nodeId)) {
+        newCollapsedNodes.delete(nodeId);
+      } else {
+        newCollapsedNodes.add(nodeId);
+      }
+      return { collapsedNodes: newCollapsedNodes };
+    });
+  },
+
+  isNodeCollapsed: (nodeId) => {
+    return get().collapsedNodes.has(nodeId);
+  },
+
+  getVisibleNodes: () => {
+    const { nodes, edges, collapsedNodes } = get();
+    
+    // 找出所有被收縮節點的後代節點
+    const getDescendants = (nodeId: string): Set<string> => {
+      const descendants = new Set<string>();
+      const children = edges.filter(edge => edge.source === nodeId).map(edge => edge.target);
+      
+      children.forEach(childId => {
+        descendants.add(childId);
+        // 遞歸獲取子節點的後代
+        const childDescendants = getDescendants(childId);
+        childDescendants.forEach(desc => descendants.add(desc));
+      });
+      
+      return descendants;
+    };
+    
+    const hiddenNodes = new Set<string>();
+    
+    // 對每個收縮的節點，找出其所有後代
+    collapsedNodes.forEach(collapsedNodeId => {
+      const descendants = getDescendants(collapsedNodeId);
+      descendants.forEach(desc => hiddenNodes.add(desc));
+    });
+    
+    // 返回不在隱藏列表中的節點
+    return nodes.filter(node => !hiddenNodes.has(node.id));
+  },
+
+  getVisibleEdges: () => {
+    const { edges } = get();
+    const visibleNodes = get().getVisibleNodes();
+    const visibleNodeIds = new Set(visibleNodes.map(node => node.id));
+    
+    // 只返回兩端都是可見節點的邊
+    return edges.filter(edge => 
+      visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
+    );
   },
 }));
 
