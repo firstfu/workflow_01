@@ -81,6 +81,9 @@ interface OrgChartState {
   setAutoLayoutCallback: (callback: () => void) => void;
   setIsDraggingNode: (isDragging: boolean) => void;
   setOnNodeDropCallback: (callback: (sourceId: string, targetId: string) => void) => void;
+  
+  // 私有屬性
+  _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null;
 }
 
 const useOrgChartStore = create<OrgChartState>((set, get) => ({

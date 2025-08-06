@@ -176,8 +176,8 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
 
     if (sourceId && sourceId !== data.id) {
       // 觸發彈窗選擇
-      const state = useOrgChartStore.getState() as Record<string, unknown>;
-      const callback = state._onNodeDropCallback as ((sourceId: string, targetId: string) => void) | undefined;
+      const state = useOrgChartStore.getState();
+      const callback = state._onNodeDropCallback;
       if (callback) {
         callback(sourceId, data.id);
       }
