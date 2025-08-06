@@ -1,3 +1,50 @@
+/**
+ * 組織架構圖狀態管理器
+ * 
+ * 這個檔案使用 Zustand 實現全域狀態管理，負責處理組織架構圖的所有狀態和操作：
+ * 
+ * 核心功能：
+ * - 節點和邊的狀態管理
+ * - 員工資料的 CRUD 操作
+ * - 拖拽狀態和回調函數管理
+ * - 自動排版系統整合
+ * - ReactFlow 事件處理
+ * 
+ * 資料結構：
+ * - Employee: 員工基本資料介面，包含 id、name、position、department、email、level
+ * - Node<Employee>: ReactFlow 節點，包含位置資訊和員工資料
+ * - Edge: ReactFlow 邊，表示員工之間的層級關係
+ * 
+ * 狀態管理：
+ * - nodes: 所有員工節點的陣列
+ * - edges: 所有連線關係的陣列
+ * - selectedNode: 當前選中的節點 ID
+ * - isDraggingNode: 全域拖拽狀態標記
+ * - autoLayoutCallback: 自動排版回調函數
+ * - _onNodeDropCallback: 節點拖拽完成回調函數（私有）
+ * 
+ * 主要操作：
+ * - setNodes/setEdges: 批量更新節點/邊資料
+ * - addEmployee: 新增員工並自動創建節點和連線
+ * - updateEmployee: 更新現有員工資料
+ * - deleteEmployee: 刪除員工及相關連線，觸發自動排版
+ * - onNodesChange/onEdgesChange: ReactFlow 變更事件處理
+ * - onConnect: 處理新連線創建
+ * 
+ * 拖拽機制：
+ * - 使用 _onNodeDropCallback 實現拖拽操作回調
+ * - 透過 isDraggingNode 狀態控制視圖交互行為
+ * - 支援替換和交換兩種拖拽操作模式
+ * 
+ * 自動排版整合：
+ * - 透過 autoLayoutCallback 與排版系統解耦
+ * - 在新增/刪除操作後自動觸發重新排版
+ * - 確保視圖始終保持整齊的樹狀結構
+ * 
+ * @author Claude Code
+ * @version 1.0.0
+ */
+
 import { create } from 'zustand';
 import { Node, Edge, Connection, NodeChange, EdgeChange, addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 
