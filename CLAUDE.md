@@ -13,12 +13,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 測試開發
 開發伺服器預設在 http://localhost:3000 執行
 
+### 開發工作流程
+1. 修改程式碼後執行 `npm run lint` 檢查程式碼品質
+2. 執行 `npm run build` 確認建置無誤
+3. 使用 `npm run dev` 進行本地測試
+
 ## 專案架構
 
 這是一個組織架構圖應用程式，使用 Next.js 15.4.5 與 App Router，技術棧包含 TypeScript、React 19 和 Tailwind CSS v4。
 
 ### 主要功能
 - 互動式組織架構圖，支援拖拽、縮放、自動排版
+- 拖拽操作：節點間拖拽可選擇「替換資料」或「交換資料」，支援拖拽狀態管理
 - 員工資料管理 (新增、編輯、刪除)
 - 匯入/匯出 JSON 格式資料
 - 深淺主題切換、格線顯示控制

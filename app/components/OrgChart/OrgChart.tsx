@@ -268,10 +268,11 @@ const OrgChartContent = () => {
     input.click();
   }, []);
 
-  const handleDragAction = useCallback(() => {
+  const handleDragAction = useCallback((overrideAction?: 'replace' | 'swap') => {
     if (!dragAction) return;
     
-    const { sourceId, targetId, action } = dragAction;
+    const { sourceId, targetId } = dragAction;
+    const action = overrideAction || dragAction.action;
     const currentNodes = useOrgChartStore.getState().nodes;
     const sourceNode = currentNodes.find(n => n.id === sourceId);
     const targetNode = currentNodes.find(n => n.id === targetId);
@@ -279,12 +280,12 @@ const OrgChartContent = () => {
     if (!sourceNode || !targetNode) return;
     
     if (action === 'replace') {
-      // 替換資料：將來源節點的資料覆蓋到目標節點
+      // 替換資料：來源節點取得目標節點的資料
       const updatedNodes = currentNodes.map(node => {
-        if (node.id === targetId) {
+        if (node.id === sourceId) {
           return {
             ...node,
-            data: { ...sourceNode.data }
+            data: { ...targetNode.data, id: sourceId }
           };
         }
         return node;
@@ -296,13 +297,13 @@ const OrgChartContent = () => {
         if (node.id === sourceId) {
           return {
             ...node,
-            data: { ...targetNode.data }
+            data: { ...targetNode.data, id: sourceId }
           };
         }
         if (node.id === targetId) {
           return {
             ...node,
-            data: { ...sourceNode.data }
+            data: { ...sourceNode.data, id: targetId }
           };
         }
         return node;
@@ -491,10 +492,7 @@ const OrgChartContent = () => {
             
             <div className="space-y-2">
               <button
-                onClick={() => {
-                  setDragAction({ ...dragAction, action: 'replace' });
-                  handleDragAction();
-                }}
+                onClick={() => handleDragAction('replace')}
                 className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
                 title="來源節點取得目標節點的資料"
               >
@@ -502,10 +500,7 @@ const OrgChartContent = () => {
               </button>
               
               <button
-                onClick={() => {
-                  setDragAction({ ...dragAction, action: 'swap' });
-                  handleDragAction();
-                }}
+                onClick={() => handleDragAction('swap')}
                 className="w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded text-sm transition-colors"
                 title="兩個節點互相交換資料"
               >
