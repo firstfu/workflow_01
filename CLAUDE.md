@@ -15,16 +15,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案架構
 
-這是一個使用 Next.js 15.4.5 與 App Router 的專案，使用 TypeScript、React 19 和 Tailwind CSS v4。
+這是一個組織架構圖應用程式，使用 Next.js 15.4.5 與 App Router，技術棧包含 TypeScript、React 19 和 Tailwind CSS v4。
 
-### 主要結構
-- `app/` - Next.js App Router 目錄
-  - `layout.tsx` - 根佈局，包含字體設定 (Geist 字體) 和全域樣式
-  - `page.tsx` - 首頁元件
-  - `globals.css` - 全域 CSS 樣式
+### 主要功能
+- 互動式組織架構圖，支援拖拽、縮放、自動排版
+- 員工資料管理 (新增、編輯、刪除)
+- 匯入/匯出 JSON 格式資料
+- 深淺主題切換、格線顯示控制
+- 小地圖導航和節點統計
+
+### 核心架構
+- `app/page.tsx` - 主頁面，渲染 OrgChart 元件
+- `app/components/OrgChart/` - 組織架構圖核心模組
+  - `OrgChart.tsx` - 主要元件，整合 ReactFlow 與工具列功能
+  - `CustomNode.tsx` - 自定義節點元件，用於顯示員工資訊
+  - `useOrgChartStore.ts` - Zustand 狀態管理，處理節點/邊資料與操作
+
+### 狀態管理
+- 使用 Zustand 管理全域狀態
+- Employee 介面定義員工資料結構 (包含 id, name, position, department, email, level)
+- 節點操作：新增、更新、刪除員工，以及節點/邊的變更處理
+- 支援父子層級關係建立
+
+### 主要依賴
+- `@xyflow/react` - 流程圖/組織圖框架
+- `zustand` - 輕量級狀態管理
+- `lucide-react` - 圖示庫
 - TypeScript 設定使用 `@/*` 路徑別名對應到專案根目錄
-
-### 技術配置
-- 使用 ESLint 9 與 Next.js 推薦配置
-- PostCSS 處理 Tailwind CSS
-- TypeScript strict mode 啟用
