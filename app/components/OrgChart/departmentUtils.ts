@@ -109,7 +109,8 @@ export const getIconName = (iconName: string): string => {
     'Building2': 'Building2',
     'Briefcase': 'Briefcase',
     'Settings': 'Settings',
-    'Globe': 'Globe'
+    'Globe': 'Globe',
+    'Palette': 'Palette'
   };
   
   return iconMap[iconName] || 'Building2';

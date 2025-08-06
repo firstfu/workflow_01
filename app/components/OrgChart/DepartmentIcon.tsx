@@ -17,6 +17,7 @@ import {
   Briefcase,
   Settings,
   Globe,
+  Palette,
   LucideProps
 } from 'lucide-react';
 
@@ -31,6 +32,7 @@ const iconMap = {
   Briefcase,
   Settings,
   Globe,
+  Palette,
 } as const;
 
 interface DepartmentIconProps extends Omit<LucideProps, 'size'> {

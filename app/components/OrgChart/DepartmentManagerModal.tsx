@@ -65,7 +65,7 @@ const DepartmentManagerModal: React.FC<DepartmentManagerModalProps> = ({ isOpen,
   };
 
   const colorOptions = Object.keys(departmentColors) as Array<keyof typeof departmentColors>;
-  const iconOptions = ['Building2', 'Users', 'Code', 'DollarSign', 'Megaphone', 'Crown', 'Briefcase', 'Settings', 'Globe'];
+  const iconOptions = ['Building2', 'Users', 'Code', 'DollarSign', 'Megaphone', 'Crown', 'Briefcase', 'Settings', 'Globe', 'Palette'];
 
   if (!isOpen) return null;
 
