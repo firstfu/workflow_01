@@ -13,7 +13,7 @@ interface CustomNodeProps {
 }
 
 const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
-  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes } = useOrgChartStore();
+  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes, autoLayout } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [editData, setEditData] = React.useState({
@@ -74,6 +74,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
       level: data.level + 1,
     };
     addEmployee(newEmployee, data.id);
+    setTimeout(() => {
+      autoLayout();
+    }, 300);
     setShowMenu(false);
   };
 

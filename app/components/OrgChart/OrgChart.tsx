@@ -11,6 +11,7 @@ import {
   useReactFlow,
   ReactFlowProvider,
   BackgroundVariant,
+  NodeChange,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
@@ -32,10 +33,11 @@ const OrgChartContent = () => {
   const {
     nodes,
     edges,
-    onNodesChange,
+    onNodesChange: originalOnNodesChange,
     onEdgesChange,
     onConnect,
     addEmployee,
+    setAutoLayoutCallback,
   } = useOrgChartStore();
   
   const reactFlowInstance = useReactFlow();
@@ -43,26 +45,157 @@ const OrgChartContent = () => {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
+
+  const onNodesChange = useCallback((changes: NodeChange[]) => {
+    const filteredChanges = changes.filter(change => {
+      if (change.type === 'position' && change.dragging) {
+        return false;
+      }
+      return true;
+    });
+    
+    originalOnNodesChange(filteredChanges);
+  }, [originalOnNodesChange]);
   
   const handleAutoLayout = useCallback(() => {
-    const layoutedNodes = nodes.map((node) => {
-      const level = node.data.level;
-      const nodesAtLevel = nodes.filter(n => n.data.level === level);
-      const indexAtLevel = nodesAtLevel.findIndex(n => n.id === node.id);
-      const spacing = 300;
-      const ySpacing = 200;
-      
+    const { nodes: currentNodes, edges: currentEdges } = useOrgChartStore.getState();
+    
+    // 建立節點映射和關係
+    const nodeMap = new Map<string, typeof currentNodes[0]>();
+    currentNodes.forEach(node => nodeMap.set(node.id, node));
+    
+    // 建立父子關係映射
+    const childrenMap = new Map<string, string[]>();
+    const parentMap = new Map<string, string>();
+    
+    currentEdges.forEach(edge => {
+      if (!childrenMap.has(edge.source)) {
+        childrenMap.set(edge.source, []);
+      }
+      childrenMap.get(edge.source)!.push(edge.target);
+      parentMap.set(edge.target, edge.source);
+    });
+    
+    // 找出根節點
+    const rootNodes = currentNodes.filter(node => !parentMap.has(node.id));
+    if (rootNodes.length === 0) return;
+    
+    // 布局配置
+    const horizontalSpacing = 350; // 同層節點之間的水平間距
+    const verticalSpacing = 180;   // 層級之間的垂直間距
+    const startY = 50;
+    
+    // 儲存計算後的位置
+    const nodePositions = new Map<string, { x: number; y: number }>();
+    
+    // 建立層級結構
+    interface TreeNode {
+      id: string;
+      children: TreeNode[];
+      width: number;
+      x?: number;
+      y?: number;
+    }
+    
+    // 建立樹結構
+    const buildTree = (nodeId: string): TreeNode => {
+      const children = (childrenMap.get(nodeId) || []).map(childId => buildTree(childId));
       return {
-        ...node,
-        position: {
-          x: (indexAtLevel - (nodesAtLevel.length - 1) / 2) * spacing + 500,
-          y: (level - 1) * ySpacing + 100,
-        },
+        id: nodeId,
+        children,
+        width: 0, // 稍後計算
       };
+    };
+    
+    // 計算每個節點所需的寬度（包含其子樹）
+    const calculateWidth = (treeNode: TreeNode): number => {
+      if (treeNode.children.length === 0) {
+        treeNode.width = 1; // 葉節點寬度為1個單位
+        return 1;
+      }
+      
+      let totalWidth = 0;
+      treeNode.children.forEach(child => {
+        totalWidth += calculateWidth(child);
+      });
+      
+      treeNode.width = totalWidth;
+      return totalWidth;
+    };
+    
+    // 設置節點位置
+    const setPositions = (treeNode: TreeNode, left: number, top: number) => {
+      const nodeData = nodeMap.get(treeNode.id);
+      if (!nodeData) return;
+      
+      // 計算節點的X位置（在其子樹的中心）
+      const nodeX = left + (treeNode.width * horizontalSpacing) / 2;
+      treeNode.x = nodeX;
+      treeNode.y = top;
+      
+      nodePositions.set(treeNode.id, { x: nodeX, y: top });
+      
+      // 定位子節點
+      if (treeNode.children.length > 0) {
+        let childLeft = left;
+        treeNode.children.forEach(child => {
+          setPositions(child, childLeft, top + verticalSpacing);
+          childLeft += child.width * horizontalSpacing;
+        });
+      }
+    };
+    
+    // 對根節點執行布局（假設只有一個根節點為主要情況）
+    const mainRoot = rootNodes[0];
+    const tree = buildTree(mainRoot.id);
+    calculateWidth(tree);
+    
+    // 計算起始位置，使樹居中
+    const totalWidth = tree.width * horizontalSpacing;
+    const startX = 800 - totalWidth / 2; // 假設畫布寬度約1600
+    
+    setPositions(tree, startX, startY);
+    
+    // 處理其他孤立的根節點（如果有）
+    if (rootNodes.length > 1) {
+      let offsetX = startX + totalWidth + horizontalSpacing;
+      for (let i = 1; i < rootNodes.length; i++) {
+        const root = rootNodes[i];
+        const rootTree = buildTree(root.id);
+        calculateWidth(rootTree);
+        setPositions(rootTree, offsetX, startY);
+        offsetX += rootTree.width * horizontalSpacing + horizontalSpacing;
+      }
+    }
+    
+    // 更新節點位置
+    const layoutedNodes = currentNodes.map(node => {
+      const position = nodePositions.get(node.id);
+      if (position) {
+        return {
+          ...node,
+          position: { x: position.x, y: position.y },
+        };
+      }
+      return node;
     });
     
     useOrgChartStore.getState().setNodes(layoutedNodes);
-  }, [nodes]);
+    
+    // 自動調整視圖
+    setTimeout(() => {
+      reactFlowInstance.fitView({ padding: 0.15, duration: 800 });
+    }, 100);
+  }, [reactFlowInstance]);
+
+  // 設置自動排版回調並在初始化時執行
+  React.useEffect(() => {
+    setAutoLayoutCallback(handleAutoLayout);
+    // 初始化時自動執行排版
+    setTimeout(() => {
+      handleAutoLayout();
+    }, 500);
+  }, [setAutoLayoutCallback, handleAutoLayout]);
   
   const handleFitView = useCallback(() => {
     reactFlowInstance.fitView({ padding: 0.2, duration: 800 });
@@ -87,7 +220,11 @@ const OrgChartContent = () => {
       level: 2,
     };
     addEmployee(newEmployee);
-  }, [nodes, addEmployee]);
+    
+    setTimeout(() => {
+      handleAutoLayout();
+    }, 300);
+  }, [nodes, addEmployee, handleAutoLayout]);
   
   const handleExport = useCallback(() => {
     const data = {
@@ -140,11 +277,11 @@ const OrgChartContent = () => {
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{
-          type: 'smoothstep',
-          animated: true,
+          type: 'straight',
+          animated: false,
           style: {
             strokeWidth: 2,
-            stroke: '#94a3b8',
+            stroke: '#374151',
           },
         }}
       >

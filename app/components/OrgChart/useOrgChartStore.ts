@@ -28,6 +28,8 @@ interface OrgChartState {
   
   setSelectedNode: (id: string | null) => void;
   getEmployeeById: (id: string) => Employee | undefined;
+  autoLayout: () => void;
+  setAutoLayoutCallback: (callback: () => void) => void;
 }
 
 const useOrgChartStore = create<OrgChartState>((set, get) => ({
@@ -100,13 +102,16 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   ],
   
   edges: [
-    { id: 'e1-2', source: '1', target: '2', type: 'smoothstep' },
-    { id: 'e1-3', source: '1', target: '3', type: 'smoothstep' },
-    { id: 'e2-4', source: '2', target: '4', type: 'smoothstep' },
-    { id: 'e2-5', source: '2', target: '5', type: 'smoothstep' },
+    { id: 'e1-2', source: '1', target: '2', type: 'straight' },
+    { id: 'e1-3', source: '1', target: '3', type: 'straight' },
+    { id: 'e2-4', source: '2', target: '4', type: 'straight' },
+    { id: 'e2-5', source: '2', target: '5', type: 'straight' },
   ],
   
   selectedNode: null,
+  
+  // 儲存自動排版的回調函數
+  _autoLayoutCallback: null as (() => void) | null,
   
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
@@ -125,7 +130,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   
   onConnect: (connection) => {
     set({
-      edges: addEdge({ ...connection, type: 'smoothstep' }, get().edges),
+      edges: addEdge({ ...connection, type: 'straight' }, get().edges),
     });
   },
   
@@ -145,7 +150,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
         id: `e${parentId}-${employee.id}`,
         source: parentId,
         target: employee.id,
-        type: 'smoothstep',
+        type: 'straight',
       });
     }
     
@@ -181,6 +186,20 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   getEmployeeById: (id) => {
     const node = get().nodes.find((n) => n.id === id);
     return node?.data;
+  },
+
+  setAutoLayoutCallback: (callback) => {
+    set({ _autoLayoutCallback: callback } as Partial<OrgChartState & { _autoLayoutCallback: (() => void) | null }>);
+  },
+
+  autoLayout: () => {
+    const state = get() as OrgChartState & { _autoLayoutCallback: (() => void) | null };
+    const callback = state._autoLayoutCallback;
+    if (callback) {
+      setTimeout(() => {
+        callback();
+      }, 100);
+    }
   },
 }));
 
