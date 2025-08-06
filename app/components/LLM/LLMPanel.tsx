@@ -107,7 +107,7 @@ const LLMPanel = () => {
       </div>
 
       {/* 內容區域 */}
-      <div className="p-6">
+      <div className="p-4">
         {renderContent()}
       </div>
     </div>

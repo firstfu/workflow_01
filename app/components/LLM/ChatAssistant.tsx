@@ -117,7 +117,7 @@ const ChatAssistant = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col h-[600px]">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 flex flex-col h-[500px]">
       {/* 標題列 */}
       <div className="flex items-center gap-3 p-4 border-b border-gray-200">
         <div className="p-2 bg-green-100 rounded-lg">

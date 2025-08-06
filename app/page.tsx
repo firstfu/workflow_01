@@ -35,7 +35,7 @@ export default function Home() {
 
       {/* LLM 功能面板 */}
       <div className={`transition-all duration-300 border-l border-gray-200 bg-white ${
-        showLLMPanel ? 'w-1/2 opacity-100' : 'w-0 opacity-0 overflow-hidden'
+        showLLMPanel ? 'w-1/3 opacity-100' : 'w-0 opacity-0 overflow-hidden'
       }`}>
         {showLLMPanel && (
           <div className="h-screen overflow-y-auto p-4">

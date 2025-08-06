@@ -112,8 +112,8 @@ ${isEditing ? editedDescription : result.jobDescription}
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4">
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-purple-100 rounded-lg">
             <FileText className="w-5 h-5 text-purple-600" />
@@ -261,11 +261,11 @@ ${isEditing ? editedDescription : result.jobDescription}
 
       {/* 初始狀態 */}
       {!result && !isGenerating && !error && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <FileText className="w-8 h-8 text-gray-400" />
+        <div className="text-center py-8">
+          <div className="w-12 h-12 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-3">
+            <FileText className="w-6 h-6 text-gray-400" />
           </div>
-          <h4 className="text-lg font-medium text-gray-900 mb-2">選擇員工並生成職位描述</h4>
+          <h4 className="text-base font-medium text-gray-900 mb-2">選擇員工並生成職位描述</h4>
           <p className="text-gray-600 mb-4">AI 將根據員工的職位、部門和層級生成專業的職位描述</p>
           <ul className="text-sm text-gray-500 space-y-1 text-left max-w-md mx-auto">
             <li>• 職位概述與責任</li>
