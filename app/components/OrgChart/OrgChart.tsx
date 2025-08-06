@@ -280,12 +280,25 @@ const OrgChartContent = () => {
     if (!sourceNode || !targetNode) return;
     
     if (action === 'replace') {
-      // 替換資料：來源節點取得目標節點的資料
+      // 替換資料：目標節點獲得來源節點的資料，來源節點資料被清空
       const updatedNodes = currentNodes.map(node => {
+        if (node.id === targetId) {
+          return {
+            ...node,
+            data: { ...sourceNode.data, id: targetId }
+          };
+        }
         if (node.id === sourceId) {
           return {
             ...node,
-            data: { ...targetNode.data, id: sourceId }
+            data: { 
+              id: sourceId,
+              name: '空節點',
+              position: '未設定',
+              department: '未設定',
+              email: '',
+              level: sourceNode.data.level // 保持原本的層級
+            }
           };
         }
         return node;
@@ -494,7 +507,7 @@ const OrgChartContent = () => {
               <button
                 onClick={() => handleDragAction('replace')}
                 className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
-                title="來源節點取得目標節點的資料"
+                title="目標節點獲得來源節點的資料，來源節點清空"
               >
                 替換資料
               </button>
