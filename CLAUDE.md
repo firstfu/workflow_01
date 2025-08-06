@@ -37,8 +37,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 節點操作：新增、更新、刪除員工，以及節點/邊的變更處理
 - 支援父子層級關係建立
 
+### 自動排版系統
+- `handleAutoLayout` 函數實作智能樹狀布局算法
+- 預先計算子樹寬度，確保節點不重疊
+- 支援多根節點情況，父節點自動居中於子節點上方
+- 布局參數：水平間距 650px，垂直間距 280px
+- 連線類型使用 `smoothstep` (borderRadius: 0) 產生垂直-水平-垂直的直角連線
+
 ### 主要依賴
 - `@xyflow/react` - 流程圖/組織圖框架
 - `zustand` - 輕量級狀態管理
 - `lucide-react` - 圖示庫
 - TypeScript 設定使用 `@/*` 路徑別名對應到專案根目錄
+
+## 連線樣式配置
+
+組織圖使用特定的連線樣式：
+- 類型：`smoothstep` 
+- 樣式：`borderRadius: 0, offset: 20` 產生直角轉折
+- 連線路徑：先垂直向下，再水平移動，最後垂直向上到目標節點
+- 避免使用 `step`, `straight`, 或 `default` 類型以維持一致的組織圖外觀
