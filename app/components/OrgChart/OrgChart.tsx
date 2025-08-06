@@ -101,7 +101,11 @@ const OrgChartContent = () => {
   }, [originalOnNodesChange]);
   
   const handleAutoLayout = useCallback(() => {
-    const { nodes: currentNodes, edges: currentEdges } = useOrgChartStore.getState();
+    const { getVisibleNodes, getVisibleEdges } = useOrgChartStore.getState();
+    
+    // 使用可見節點和邊進行排版計算
+    const currentNodes = getVisibleNodes();
+    const currentEdges = getVisibleEdges();
     
     // 建立節點映射和關係
     const nodeMap = new Map<string, typeof currentNodes[0]>();
@@ -211,8 +215,9 @@ const OrgChartContent = () => {
       }
     }
     
-    // 更新節點位置
-    const layoutedNodes = currentNodes.map(node => {
+    // 更新節點位置 - 需要更新所有節點，包括隱藏的節點
+    const { nodes: allNodes } = useOrgChartStore.getState();
+    const layoutedNodes = allNodes.map(node => {
       const position = nodePositions.get(node.id);
       if (position) {
         return {
@@ -220,7 +225,7 @@ const OrgChartContent = () => {
           position: { x: position.x, y: position.y },
         };
       }
-      return node;
+      return node; // 保持隱藏節點的原始位置
     });
     
     useOrgChartStore.getState().setNodes(layoutedNodes);

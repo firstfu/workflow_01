@@ -119,6 +119,10 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
   const handleToggleCollapse = (e: React.MouseEvent) => {
     e.stopPropagation();
     toggleNodeCollapse(data.id);
+    // 收縮/展開後自動重新排版以保持對稱性
+    setTimeout(() => {
+      autoLayout();
+    }, 100);
   };
 
   const handleAddSubordinate = (e: React.MouseEvent) => {
