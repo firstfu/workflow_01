@@ -1,8 +1,8 @@
 /**
  * 自定義節點元件
- * 
+ *
  * 這個元件負責渲染組織架構圖中的每個員工節點，提供豐富的互動功能：
- * 
+ *
  * 主要功能：
  * - 員工資料顯示：姓名、職位、部門、電子郵件
  * - 層級視覺化：根據員工層級顯示不同的顏色和樣式
@@ -10,32 +10,32 @@
  * - 內嵌編輯：雙擊節點可直接編輯員工資訊
  * - 操作選單：提供新增、編輯、刪除等操作
  * - 響應式設計：適應不同螢幕尺寸
- * 
+ *
  * 互動操作：
  * - 單擊：選擇節點
  * - 雙擊：進入編輯模式
  * - 拖拽：觸發節點資料操作選擇彈窗
  * - 右鍵選單：存取完整操作功能
- * 
+ *
  * 拖拽操作流程：
  * 1. 按住節點開始拖拽
  * 2. 拖拽到目標節點並釋放
  * 3. 彈出操作選擇對話框
  * 4. 選擇「替換」或「交換」操作
  * 5. 執行對應的資料變更
- * 
+ *
  * 層級顏色系統：
  * - Level 1 (高階主管): 紫色 (#8b5cf6)
  * - Level 2 (中階主管): 藍色 (#3b82f6)
  * - Level 3 (基層主管): 綠色 (#10b981)
  * - Level 4 (一般員工): 橙色 (#f59e0b)
- * 
+ *
  * 技術實現：
  * - 使用 React.memo 優化渲染性能
  * - HTML5 Drag and Drop API 實現拖拽功能
  * - 全域狀態管理確保拖拽狀態同步
  * - 事件委託處理全域 mouseup 事件
- * 
+ *
  * @author Claude Code
  * @version 1.0.0
  */
@@ -146,7 +146,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     // setIsDraggingNode 已在 mousedown 時設置
 
     // 創建自定義拖曳預覽
-    const dragPreview = document.createElement('div');
+    const dragPreview = document.createElement("div");
     dragPreview.innerHTML = `
       <div style="
         background: white;
@@ -164,7 +164,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
             width: 28px;
             height: 28px;
             border-radius: 50%;
-            background: linear-gradient(to bottom right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
+            background: linear-gradient(to bottom right, ${
+              data.level === 1 ? "#8b5cf6, #ec4899" : data.level === 2 ? "#3b82f6, #06b6d4" : data.level === 3 ? "#10b981, #059669" : "#f59e0b, #eab308"
+            });
             display: flex;
             align-items: center;
             justify-content: center;
@@ -182,16 +184,16 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         </div>
       </div>
     `;
-    
-    dragPreview.style.position = 'absolute';
-    dragPreview.style.top = '-1000px';
-    dragPreview.style.left = '-1000px';
-    dragPreview.style.pointerEvents = 'none';
+
+    dragPreview.style.position = "absolute";
+    dragPreview.style.top = "-1000px";
+    dragPreview.style.left = "-1000px";
+    dragPreview.style.pointerEvents = "none";
     document.body.appendChild(dragPreview);
-    
+
     // 設置拖曳影像
     e.dataTransfer.setDragImage(dragPreview, 60, 40);
-    
+
     // 清理預覽元素
     setTimeout(() => {
       document.body.removeChild(dragPreview);
@@ -350,9 +352,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
                   title="拖拽以替換其他節點"
                   style={{ touchAction: "none" }}
                 >
-                  <Move className={`w-4 h-4 pointer-events-none transition-colors ${
-                    isDragging ? "text-blue-600" : "text-gray-400 hover:text-blue-500"
-                  }`} />
+                  <Move className={`w-4 h-4 pointer-events-none transition-colors ${isDragging ? "text-blue-600" : "text-gray-400 hover:text-blue-500"}`} />
                 </div>
               </div>
 
