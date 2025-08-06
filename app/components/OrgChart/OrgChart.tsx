@@ -483,25 +483,22 @@ const OrgChartContent = () => {
       
       {/* 拖拽選項彈窗 */}
       {showDragModal && dragAction && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              選擇拖拽操作
+        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[280px]">
+            <h3 className="text-base font-medium text-gray-800 mb-3 text-center">
+              選擇操作
             </h3>
-            <p className="text-gray-600 mb-6">
-              您想要如何處理這兩個節點的資料？
-            </p>
             
-            <div className="space-y-3">
+            <div className="space-y-2">
               <button
                 onClick={() => {
                   setDragAction({ ...dragAction, action: 'replace' });
                   handleDragAction();
                 }}
-                className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-between group"
+                className="w-full px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm transition-colors"
+                title="來源節點取得目標節點的資料"
               >
-                <span className="font-medium">替換資料</span>
-                <span className="text-sm opacity-90">將來源資料覆蓋到目標節點</span>
+                替換資料
               </button>
               
               <button
@@ -509,10 +506,10 @@ const OrgChartContent = () => {
                   setDragAction({ ...dragAction, action: 'swap' });
                   handleDragAction();
                 }}
-                className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-between group"
+                className="w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white rounded text-sm transition-colors"
+                title="兩個節點互相交換資料"
               >
-                <span className="font-medium">交換資料</span>
-                <span className="text-sm opacity-90">交換兩個節點的資料</span>
+                交換資料
               </button>
               
               <button
@@ -520,7 +517,7 @@ const OrgChartContent = () => {
                   setDragAction(null);
                   setShowDragModal(false);
                 }}
-                className="w-full px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded text-sm transition-colors"
               >
                 取消
               </button>
