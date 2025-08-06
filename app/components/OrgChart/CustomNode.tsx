@@ -197,9 +197,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
 
   return (
     <div
-      className={`relative transition-all duration-300 ${selected ? "scale-105" : ""} ${isDragging ? "opacity-50" : ""} ${
-        dragOver ? "ring-2 ring-blue-400" : ""
-      }`}
+      className={`relative transition-all duration-300 ${selected ? "scale-105" : ""} ${
+        isDragging ? "opacity-60 scale-110 shadow-2xl ring-2 ring-blue-400 ring-opacity-50 z-50" : ""
+      } ${dragOver ? "ring-2 ring-green-400 ring-opacity-70 scale-105" : ""}`}
       onClick={!isEditing ? handleNodeClick : undefined}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -297,11 +297,15 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
                     e.stopPropagation();
                     e.preventDefault();
                   }}
-                  className="cursor-move p-1 hover:bg-gray-100 rounded transition-colors select-none"
+                  className={`cursor-move p-2 hover:bg-blue-50 hover:ring-1 hover:ring-blue-300 rounded-lg transition-all duration-200 select-none ${
+                    isDragging ? "bg-blue-100 ring-2 ring-blue-400 shadow-md" : ""
+                  }`}
                   title="拖拽以替換其他節點"
                   style={{ touchAction: "none" }}
                 >
-                  <Move className="w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Move className={`w-4 h-4 pointer-events-none transition-colors ${
+                    isDragging ? "text-blue-600" : "text-gray-400 hover:text-blue-500"
+                  }`} />
                 </div>
               </div>
 
