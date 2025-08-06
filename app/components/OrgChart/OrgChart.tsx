@@ -277,11 +277,15 @@ const OrgChartContent = () => {
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{
-          type: 'straight',
+          type: 'smoothstep',
           animated: false,
           style: {
             strokeWidth: 2,
-            stroke: '#374151',
+            stroke: '#6B7280',
+          },
+          pathOptions: {
+            borderRadius: 8,
+            offset: 20,
           },
         }}
       >
