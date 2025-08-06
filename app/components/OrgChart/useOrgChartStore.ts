@@ -201,6 +201,15 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
     );
     
     set({ nodes: filteredNodes, edges: filteredEdges });
+    
+    // 刪除後自動重新排版
+    const state = get() as OrgChartState & { _autoLayoutCallback: (() => void) | null };
+    const callback = state._autoLayoutCallback;
+    if (callback) {
+      setTimeout(() => {
+        callback();
+      }, 100);
+    }
   },
   
   setSelectedNode: (id) => set({ selectedNode: id }),
