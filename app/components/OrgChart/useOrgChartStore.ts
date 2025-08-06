@@ -102,10 +102,10 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   ],
   
   edges: [
-    { id: 'e1-2', source: '1', target: '2', type: 'smoothstep' },
-    { id: 'e1-3', source: '1', target: '3', type: 'smoothstep' },
-    { id: 'e2-4', source: '2', target: '4', type: 'smoothstep' },
-    { id: 'e2-5', source: '2', target: '5', type: 'smoothstep' },
+    { id: 'e1-2', source: '1', target: '2', type: 'step' },
+    { id: 'e1-3', source: '1', target: '3', type: 'step' },
+    { id: 'e2-4', source: '2', target: '4', type: 'step' },
+    { id: 'e2-5', source: '2', target: '5', type: 'step' },
   ],
   
   selectedNode: null,
@@ -130,7 +130,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   
   onConnect: (connection) => {
     set({
-      edges: addEdge({ ...connection, type: 'smoothstep' }, get().edges),
+      edges: addEdge({ ...connection, type: 'step' }, get().edges),
     });
   },
   
@@ -150,7 +150,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
         id: `e${parentId}-${employee.id}`,
         source: parentId,
         target: employee.id,
-        type: 'smoothstep',
+        type: 'step',
       });
     }
     

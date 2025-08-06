@@ -81,9 +81,9 @@ const OrgChartContent = () => {
     if (rootNodes.length === 0) return;
     
     // 布局配置
-    const horizontalSpacing = 350; // 同層節點之間的水平間距
-    const verticalSpacing = 180;   // 層級之間的垂直間距
-    const startY = 50;
+    const horizontalSpacing = 420; // 同層節點之間的水平間距（增加間距）
+    const verticalSpacing = 200;   // 層級之間的垂直間距（增加間距）
+    const startY = 80;
     
     // 儲存計算後的位置
     const nodePositions = new Map<string, { x: number; y: number }>();
@@ -277,15 +277,11 @@ const OrgChartContent = () => {
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{
-          type: 'smoothstep',
+          type: 'step',
           animated: false,
           style: {
             strokeWidth: 2,
-            stroke: '#6B7280',
-          },
-          pathOptions: {
-            borderRadius: 8,
-            offset: 20,
+            stroke: '#374151',
           },
         }}
       >
