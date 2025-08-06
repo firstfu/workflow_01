@@ -33,6 +33,7 @@ interface OrgChartState {
   autoLayout: () => void;
   setAutoLayoutCallback: (callback: () => void) => void;
   setIsDraggingNode: (isDragging: boolean) => void;
+  setOnNodeDropCallback: (callback: (sourceId: string, targetId: string) => void) => void;
 }
 
 const useOrgChartStore = create<OrgChartState>((set, get) => ({
@@ -116,6 +117,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   
   // 儲存自動排版的回調函數
   _autoLayoutCallback: null as (() => void) | null,
+  _onNodeDropCallback: null as ((sourceId: string, targetId: string) => void) | null,
   
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
@@ -280,6 +282,10 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   },
 
   setIsDraggingNode: (isDragging) => set({ isDraggingNode: isDragging }),
+  
+  setOnNodeDropCallback: (callback) => {
+    set({ _onNodeDropCallback: callback } as Partial<OrgChartState & { _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null }>);
+  },
 }));
 
 export default useOrgChartStore;

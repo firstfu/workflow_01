@@ -44,6 +44,8 @@ const OrgChartContent = () => {
   const reactFlowInstance = useReactFlow();
   const [showGrid, setShowGrid] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [dragAction, setDragAction] = useState<{ sourceId: string; targetId: string; action: 'replace' | 'swap' } | null>(null);
+  const [showDragModal, setShowDragModal] = useState(false);
   
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
@@ -266,6 +268,63 @@ const OrgChartContent = () => {
     input.click();
   }, []);
 
+  const handleDragAction = useCallback(() => {
+    if (!dragAction) return;
+    
+    const { sourceId, targetId, action } = dragAction;
+    const currentNodes = useOrgChartStore.getState().nodes;
+    const sourceNode = currentNodes.find(n => n.id === sourceId);
+    const targetNode = currentNodes.find(n => n.id === targetId);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    if (action === 'replace') {
+      // 替換資料：將來源節點的資料覆蓋到目標節點
+      const updatedNodes = currentNodes.map(node => {
+        if (node.id === targetId) {
+          return {
+            ...node,
+            data: { ...sourceNode.data }
+          };
+        }
+        return node;
+      });
+      useOrgChartStore.getState().setNodes(updatedNodes);
+    } else if (action === 'swap') {
+      // 交換資料：交換兩個節點的資料
+      const updatedNodes = currentNodes.map(node => {
+        if (node.id === sourceId) {
+          return {
+            ...node,
+            data: { ...targetNode.data }
+          };
+        }
+        if (node.id === targetId) {
+          return {
+            ...node,
+            data: { ...sourceNode.data }
+          };
+        }
+        return node;
+      });
+      useOrgChartStore.getState().setNodes(updatedNodes);
+    }
+    
+    setDragAction(null);
+    setShowDragModal(false);
+  }, [dragAction]);
+
+  // 設置拖拽回調
+  React.useEffect(() => {
+    const handleNodeDrop = (sourceId: string, targetId: string) => {
+      setDragAction({ sourceId, targetId, action: 'replace' });
+      setShowDragModal(true);
+    };
+    
+    // 將回調函數設置到 store
+    useOrgChartStore.getState().setOnNodeDropCallback(handleNodeDrop);
+  }, []);
+
   return (
     <div className="w-full h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <ReactFlow
@@ -421,6 +480,54 @@ const OrgChartContent = () => {
           maskColor={theme === 'dark' ? 'rgb(0, 0, 0, 0.7)' : 'rgb(255, 255, 255, 0.7)'}
         />
       </ReactFlow>
+      
+      {/* 拖拽選項彈窗 */}
+      {showDragModal && dragAction && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              選擇拖拽操作
+            </h3>
+            <p className="text-gray-600 mb-6">
+              您想要如何處理這兩個節點的資料？
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  setDragAction({ ...dragAction, action: 'replace' });
+                  handleDragAction();
+                }}
+                className="w-full px-4 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-between group"
+              >
+                <span className="font-medium">替換資料</span>
+                <span className="text-sm opacity-90">將來源資料覆蓋到目標節點</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setDragAction({ ...dragAction, action: 'swap' });
+                  handleDragAction();
+                }}
+                className="w-full px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-between group"
+              >
+                <span className="font-medium">交換資料</span>
+                <span className="text-sm opacity-90">交換兩個節點的資料</span>
+              </button>
+              
+              <button
+                onClick={() => {
+                  setDragAction(null);
+                  setShowDragModal(false);
+                }}
+                className="w-full px-4 py-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -133,7 +133,12 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     const sourceId = e.dataTransfer.getData('text/plain');
     
     if (sourceId && sourceId !== data.id) {
-      replaceNodeData(sourceId, data.id);
+      // 觸發彈窗選擇
+      const state = useOrgChartStore.getState() as any;
+      const callback = state._onNodeDropCallback;
+      if (callback) {
+        callback(sourceId, data.id);
+      }
     }
     
     setDragOver(false);
