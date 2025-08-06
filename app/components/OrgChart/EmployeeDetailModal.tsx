@@ -64,12 +64,12 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className={`${themeClasses.modal} rounded-lg shadow-xl border max-w-2xl w-full max-h-[90vh] overflow-hidden`}>
+      <div className={`${themeClasses.modal} rounded-lg shadow-xl border max-w-4xl w-full max-h-[90vh] overflow-hidden`}>
         {/* 標題欄 */}
-        <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-          <div className="flex items-center gap-4">
+        <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} gap-4`}>
+          <div className="flex items-center gap-4 w-full sm:w-auto">
             {/* 頭像 */}
-            <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${getLevelColor(employee.level)} flex items-center justify-center text-white font-bold text-2xl shadow-lg`}>
+            <div className={`w-12 sm:w-16 h-12 sm:h-16 rounded-full bg-gradient-to-br ${getLevelColor(employee.level)} flex items-center justify-center text-white font-bold text-lg sm:text-2xl shadow-lg flex-shrink-0`}>
               {employee.avatar ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={employee.avatar} alt={employee.name} className="w-full h-full rounded-full object-cover" />
@@ -78,22 +78,22 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
               )}
             </div>
             
-            <div>
-              <h2 className={`text-2xl font-bold ${themeClasses.text}`}>{employee.name}</h2>
-              <p className={`text-lg ${themeClasses.textSecondary}`}>{employee.position}</p>
+            <div className="min-w-0 flex-1">
+              <h2 className={`text-lg sm:text-2xl font-bold ${themeClasses.text} truncate`}>{employee.name}</h2>
+              <p className={`text-base sm:text-lg ${themeClasses.textSecondary} truncate`}>{employee.position}</p>
               
               {/* 部門標籤 */}
               <div className="flex items-center gap-2 mt-2">
-                <div className={`w-3 h-3 rounded-full ${getDepartmentColorDot(department)}`}></div>
-                <DepartmentIcon iconName={department?.icon} size={14} className={themeClasses.textSecondary} />
-                <span className={getDepartmentBadgeClasses(department)}>
+                <div className={`w-3 h-3 rounded-full ${getDepartmentColorDot(department)} flex-shrink-0`}></div>
+                <DepartmentIcon iconName={department?.icon} size={14} className={`${themeClasses.textSecondary} flex-shrink-0`} />
+                <span className={`${getDepartmentBadgeClasses(department)} text-xs sm:text-sm truncate`}>
                   {employee.department}
                 </span>
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {onEdit && (
               <button
                 onClick={() => onEdit(employee)}
@@ -104,7 +104,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                 }`}
                 title="編輯員工"
               >
-                <Edit className="w-5 h-5" />
+                <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             )}
             <button
@@ -115,16 +115,16 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
                   : 'hover:bg-gray-100 text-gray-500 hover:text-gray-700'
               }`}
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
         </div>
 
         {/* 內容區域 */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-4 sm:p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             {/* 基本資訊 */}
-            <div className={`${themeClasses.section} rounded-lg p-4`}>
+            <div className={`${themeClasses.section} rounded-lg p-4 h-fit`}>
               <h3 className={`text-lg font-semibold ${themeClasses.text} mb-4 flex items-center gap-2`}>
                 <User className="w-5 h-5" />
                 基本資訊
@@ -183,7 +183,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
             {/* 技能與專長 */}
             {employee.skills && employee.skills.length > 0 && (
-              <div className={`${themeClasses.section} rounded-lg p-4`}>
+              <div className={`${themeClasses.section} rounded-lg p-4 h-fit`}>
                 <h3 className={`text-lg font-semibold ${themeClasses.text} mb-4 flex items-center gap-2`}>
                   <Star className="w-5 h-5" />
                   技能與專長
@@ -205,7 +205,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
 
           {/* 個人簡介 */}
           {employee.bio && (
-            <div className={`${themeClasses.section} rounded-lg p-4 mt-6`}>
+            <div className={`${themeClasses.section} rounded-lg p-4 mt-4 sm:mt-6 xl:col-span-2`}>
               <h3 className={`text-lg font-semibold ${themeClasses.text} mb-4 flex items-center gap-2`}>
                 <Building2 className="w-5 h-5" />
                 個人簡介
@@ -218,11 +218,11 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
         </div>
 
         {/* 底部按鈕 */}
-        <div className={`flex justify-end gap-3 p-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className={`flex flex-col sm:flex-row justify-end gap-3 p-4 sm:p-6 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
           {onEdit && (
             <button
               onClick={() => onEdit(employee)}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-2"
             >
               <Edit className="w-4 h-4" />
               編輯資料
@@ -230,7 +230,7 @@ const EmployeeDetailModal: React.FC<EmployeeDetailModalProps> = ({
           )}
           <button
             onClick={onClose}
-            className={`px-4 py-2 rounded-lg transition-colors ${
+            className={`w-full sm:w-auto px-4 py-2 rounded-lg transition-colors ${
               theme === 'dark'
                 ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
