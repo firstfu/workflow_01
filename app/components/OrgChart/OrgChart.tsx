@@ -82,7 +82,7 @@ const OrgChartContent = () => {
     
     // 布局配置
     const horizontalSpacing = 650; // 同層節點之間的水平間距（大幅增加間距）
-    const verticalSpacing = 220;   // 層級之間的垂直間距（適度增加間距）
+    const verticalSpacing = 280;   // 層級之間的垂直間距（大幅增加以避免線條向上彎曲）
     const startY = 100;
     
     // 儲存計算後的位置
@@ -277,11 +277,15 @@ const OrgChartContent = () => {
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{
-          type: 'default',
+          type: 'smoothstep',
           animated: false,
           style: {
             strokeWidth: 2,
-            stroke: '#6B7280',
+            stroke: '#374151',
+          },
+          pathOptions: {
+            offset: 20,
+            borderRadius: 0,
           },
         }}
       >
