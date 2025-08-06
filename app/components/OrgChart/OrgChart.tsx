@@ -38,6 +38,7 @@ const OrgChartContent = () => {
     onConnect,
     addEmployee,
     setAutoLayoutCallback,
+    isDraggingNode,
   } = useOrgChartStore();
   
   const reactFlowInstance = useReactFlow();
@@ -47,8 +48,9 @@ const OrgChartContent = () => {
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
+    // 完全禁用位置變更，避免與我們的拖拽替換功能衝突
     const filteredChanges = changes.filter(change => {
-      if (change.type === 'position' && change.dragging) {
+      if (change.type === 'position') {
         return false;
       }
       return true;
@@ -274,6 +276,13 @@ const OrgChartContent = () => {
         onConnect={onConnect}
         nodeTypes={nodeTypes}
         connectionMode={ConnectionMode.Loose}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={true}
+        panOnDrag={!isDraggingNode}
+        panOnScroll={true}
+        zoomOnScroll={true}
+        zoomOnPinch={true}
         fitView
         className={theme === 'dark' ? 'dark' : ''}
         defaultEdgeOptions={{

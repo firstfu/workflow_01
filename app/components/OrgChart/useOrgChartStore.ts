@@ -15,6 +15,7 @@ interface OrgChartState {
   nodes: Node<Employee>[];
   edges: Edge[];
   selectedNode: string | null;
+  isDraggingNode: boolean;
   
   setNodes: (nodes: Node<Employee>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -31,6 +32,7 @@ interface OrgChartState {
   getEmployeeById: (id: string) => Employee | undefined;
   autoLayout: () => void;
   setAutoLayoutCallback: (callback: () => void) => void;
+  setIsDraggingNode: (isDragging: boolean) => void;
 }
 
 const useOrgChartStore = create<OrgChartState>((set, get) => ({
@@ -110,6 +112,7 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   ],
   
   selectedNode: null,
+  isDraggingNode: false,
   
   // 儲存自動排版的回調函數
   _autoLayoutCallback: null as (() => void) | null,
@@ -275,6 +278,8 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
     
     set({ nodes: updatedNodes });
   },
+
+  setIsDraggingNode: (isDragging) => set({ isDraggingNode: isDragging }),
 }));
 
 export default useOrgChartStore;

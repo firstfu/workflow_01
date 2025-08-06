@@ -2,7 +2,7 @@
 
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus } from 'lucide-react';
+import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move } from 'lucide-react';
 import { Employee } from './useOrgChartStore';
 import useOrgChartStore from './useOrgChartStore';
 
@@ -13,7 +13,7 @@ interface CustomNodeProps {
 }
 
 const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
-  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes, autoLayout, replaceNodeData } = useOrgChartStore();
+  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes, autoLayout, replaceNodeData, setIsDraggingNode } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
@@ -24,6 +24,19 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     department: data.department,
     email: data.email,
   });
+
+  // 添加全域 mouseup 監聽器以確保狀態正確重置
+  React.useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDraggingNode(false);
+      setIsDragging(false);
+    };
+
+    document.addEventListener('mouseup', handleGlobalMouseUp);
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+    };
+  }, [setIsDraggingNode]);
 
   const handleNodeClick = () => {
     setSelectedNode(data.id);
@@ -84,28 +97,40 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
 
   // 拖拽處理函數
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('nodeId', data.id);
+    e.stopPropagation(); // 阻止事件冒泡到畫布
+    e.dataTransfer.setData('text/plain', data.id);
     e.dataTransfer.effectAllowed = 'move';
     setIsDragging(true);
+    // setIsDraggingNode 已在 mousedown 時設置
+    
+    // 設置拖拽影像為透明，避免視覺干擾
+    const dragImage = new Image();
+    dragImage.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=';
+    e.dataTransfer.setDragImage(dragImage, 0, 0);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (e: React.DragEvent) => {
+    e.stopPropagation();
     setIsDragging(false);
+    // 全域拖拽狀態由 mouseup 處理
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
     setDragOver(true);
   };
 
-  const handleDragLeave = () => {
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.stopPropagation();
     setDragOver(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    const sourceId = e.dataTransfer.getData('nodeId');
+    e.stopPropagation();
+    const sourceId = e.dataTransfer.getData('text/plain');
     
     if (sourceId && sourceId !== data.id) {
       replaceNodeData(sourceId, data.id);
@@ -129,12 +154,13 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         selected ? 'scale-105' : ''
       } ${isDragging ? 'opacity-50' : ''} ${dragOver ? 'ring-2 ring-blue-400' : ''}`}
       onClick={!isEditing ? handleNodeClick : undefined}
-      draggable={!isEditing}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      onMouseDownCapture={(e) => {
+        // 阻止節點本身觸發拖拽，但允許畫布拖動（除非是拖拽手柄）
+        e.stopPropagation();
+      }}
     >
       <Handle
         type="target"
@@ -207,13 +233,35 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         ) : (
           <>
             <div className="flex items-start justify-between mb-3">
-              <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${bgGradient} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
-                {data.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={data.avatar} alt={data.name} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  data.name.charAt(0).toUpperCase()
-                )}
+              <div className="flex items-center gap-2">
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${bgGradient} flex items-center justify-center text-white font-bold text-lg shadow-lg`}>
+                  {data.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={data.avatar} alt={data.name} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    data.name.charAt(0).toUpperCase()
+                  )}
+                </div>
+                
+                {/* 拖拽手柄 */}
+                <div
+                  draggable
+                  onDragStart={handleDragStart}
+                  onDragEnd={handleDragEnd}
+                  onPointerDownCapture={(e) => {
+                    e.stopPropagation();
+                    setIsDraggingNode(true); // 在指針按下時立即設置拖拽狀態
+                  }}
+                  onMouseDownCapture={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  className="cursor-move p-1 hover:bg-gray-100 rounded transition-colors select-none"
+                  title="拖拽以替換其他節點"
+                  style={{ touchAction: 'none' }}
+                >
+                  <Move className="w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
               
               <div className="relative">
