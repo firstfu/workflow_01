@@ -44,11 +44,10 @@
 
 import React, { memo } from "react";
 import { Handle, Position } from "@xyflow/react";
-import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move, ChevronDown, ChevronRight, Eye } from "lucide-react";
+import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move, ChevronDown, ChevronRight } from "lucide-react";
 import { Employee } from "./useOrgChartStore";
 import useOrgChartStore from "./useOrgChartStore";
 import EditModal from "./EditModal";
-import EmployeeDetailModal from "./EmployeeDetailModal";
 import DepartmentIcon from "./DepartmentIcon";
 import { getDepartmentColor, getDepartmentBadgeClasses, getDepartmentColorDot } from "./departmentUtils";
 
@@ -77,7 +76,6 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
   } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
-  const [showDetailModal, setShowDetailModal] = React.useState(false);
   const [isDragging, setIsDragging] = React.useState(false);
   const [dragOver, setDragOver] = React.useState(false);
   
@@ -104,14 +102,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
   };
 
   const handleDoubleClick = () => {
-    setShowDetailModal(true);
+    setShowEditModal(true);
   };
 
-  const handleViewDetails = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDetailModal(true);
-    setShowMenu(false);
-  };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -372,10 +365,6 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
               <div className={`absolute right-0 top-8 rounded-lg shadow-xl border py-1 z-50 min-w-[140px] ${
                 theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
               }`}>
-                <button onClick={handleViewDetails} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-                  <Eye className="w-3 h-3" />
-                  查看詳細
-                </button>
                 <button onClick={handleEdit} className={`w-full px-3 py-2 text-left text-sm hover:${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'} flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                   <Edit className="w-3 h-3" />
                   編輯
@@ -443,16 +432,6 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
         employee={data}
         onSave={handleSaveEdit}
         onCancel={handleCancelEdit}
-      />
-      
-      <EmployeeDetailModal
-        isOpen={showDetailModal}
-        employee={data}
-        onClose={() => setShowDetailModal(false)}
-        onEdit={(employee) => {
-          setShowDetailModal(false);
-          setShowEditModal(true);
-        }}
       />
     </div>
   );
