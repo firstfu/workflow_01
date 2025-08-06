@@ -145,10 +145,73 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     setIsDragging(true);
     // setIsDraggingNode 已在 mousedown 時設置
 
-    // 設置拖拽影像為透明，避免視覺干擾
-    const dragImage = new Image();
-    dragImage.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
-    e.dataTransfer.setDragImage(dragImage, 0, 0);
+    // 創建自定義拖曳預覽
+    const dragPreview = document.createElement('div');
+    dragPreview.innerHTML = `
+      <div style="
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 12px;
+        min-width: 200px;
+        border: 2px solid #60a5fa;
+        opacity: 1;
+        transform: scale(0.85);
+        font-family: ui-sans-serif, system-ui, sans-serif;
+      ">
+        <div style="display: flex; align-items: start; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              background: linear-gradient(to bottom right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: white;
+              font-weight: bold;
+              font-size: 14px;
+              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            ">
+              ${data.name.charAt(0).toUpperCase()}
+            </div>
+          </div>
+        </div>
+        <div style="space-y: 4px;">
+          <h3 style="font-weight: bold; color: #111827; font-size: 16px; margin: 0;">${data.name}</h3>
+          <p style="font-size: 14px; font-weight: 500; color: #374151; margin: 4px 0;">${data.position}</p>
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-top: 8px;">
+            <span>${data.department}</span>
+          </div>
+          <div style="margin-top: 12px;">
+            <span style="
+              display: inline-block;
+              padding: 4px 8px;
+              font-size: 12px;
+              font-weight: 500;
+              border-radius: 9999px;
+              background: linear-gradient(to right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
+              color: white;
+            ">Level ${data.level}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    dragPreview.style.position = 'absolute';
+    dragPreview.style.top = '-1000px';
+    dragPreview.style.left = '-1000px';
+    dragPreview.style.pointerEvents = 'none';
+    document.body.appendChild(dragPreview);
+    
+    // 設置拖曳影像
+    e.dataTransfer.setDragImage(dragPreview, 100, 75);
+    
+    // 清理預覽元素
+    setTimeout(() => {
+      document.body.removeChild(dragPreview);
+    }, 0);
   };
 
   const handleDragEnd = (e: React.DragEvent) => {
