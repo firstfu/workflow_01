@@ -48,6 +48,14 @@
 import { create } from 'zustand';
 import { Node, Edge, Connection, NodeChange, EdgeChange, addEdge, applyNodeChanges, applyEdgeChanges } from '@xyflow/react';
 
+export interface Department {
+  id: string;
+  name: string;
+  color: string; // Tailwind color class
+  icon: string; // Lucide icon name
+  description?: string;
+}
+
 export interface Employee extends Record<string, unknown> {
   id: string;
   name: string;
@@ -64,6 +72,10 @@ interface OrgChartState {
   selectedNode: string | null;
   isDraggingNode: boolean;
   collapsedNodes: Set<string>;
+  
+  // 部門管理
+  departments: Department[];
+  selectedDepartments: Set<string>; // 篩選選中的部門
   
   setNodes: (nodes: Node<Employee>[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -88,11 +100,62 @@ interface OrgChartState {
   getVisibleNodes: () => Node<Employee>[];
   getVisibleEdges: () => Edge[];
   
+  // 部門管理方法
+  addDepartment: (department: Department) => void;
+  updateDepartment: (id: string, data: Partial<Department>) => void;
+  deleteDepartment: (id: string) => void;
+  getDepartmentById: (id: string) => Department | undefined;
+  getDepartmentByName: (name: string) => Department | undefined;
+  toggleDepartmentFilter: (departmentName: string) => void;
+  clearDepartmentFilter: () => void;
+  getFilteredNodes: () => Node<Employee>[];
+  getDepartmentStats: () => Record<string, number>;
+  
   // 私有屬性
   _onNodeDropCallback: ((sourceId: string, targetId: string) => void) | null;
 }
 
 const useOrgChartStore = create<OrgChartState>((set, get) => ({
+  // 預設部門資料
+  departments: [
+    {
+      id: 'dept-executive',
+      name: '執行長室',
+      color: 'purple',
+      icon: 'Crown',
+      description: '公司最高決策層'
+    },
+    {
+      id: 'dept-tech',
+      name: '技術部',
+      color: 'blue', 
+      icon: 'Code',
+      description: '負責技術開發與維護'
+    },
+    {
+      id: 'dept-finance',
+      name: '財務部',
+      color: 'green',
+      icon: 'DollarSign',
+      description: '負責財務管理與會計'
+    },
+    {
+      id: 'dept-hr',
+      name: '人資部',
+      color: 'orange',
+      icon: 'Users',
+      description: '負責人力資源管理'
+    },
+    {
+      id: 'dept-marketing',
+      name: '行銷部',
+      color: 'pink',
+      icon: 'Megaphone',
+      description: '負責市場推廣與品牌'
+    }
+  ],
+  selectedDepartments: new Set<string>(),
+
   nodes: [
     {
       id: '1',
@@ -399,6 +462,75 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
     return edges.filter(edge => 
       visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target)
     );
+  },
+
+  // 部門管理方法實作
+  addDepartment: (department) => {
+    set((state) => ({
+      departments: [...state.departments, department]
+    }));
+  },
+
+  updateDepartment: (id, data) => {
+    set((state) => ({
+      departments: state.departments.map(dept => 
+        dept.id === id ? { ...dept, ...data } : dept
+      )
+    }));
+  },
+
+  deleteDepartment: (id) => {
+    set((state) => ({
+      departments: state.departments.filter(dept => dept.id !== id)
+    }));
+  },
+
+  getDepartmentById: (id) => {
+    return get().departments.find(dept => dept.id === id);
+  },
+
+  getDepartmentByName: (name) => {
+    return get().departments.find(dept => dept.name === name);
+  },
+
+  toggleDepartmentFilter: (departmentName) => {
+    set((state) => {
+      const newSelectedDepartments = new Set(state.selectedDepartments);
+      if (newSelectedDepartments.has(departmentName)) {
+        newSelectedDepartments.delete(departmentName);
+      } else {
+        newSelectedDepartments.add(departmentName);
+      }
+      return { selectedDepartments: newSelectedDepartments };
+    });
+  },
+
+  clearDepartmentFilter: () => {
+    set({ selectedDepartments: new Set<string>() });
+  },
+
+  getFilteredNodes: () => {
+    const { nodes, selectedDepartments } = get();
+    
+    // 如果沒有選擇任何部門，返回所有節點
+    if (selectedDepartments.size === 0) {
+      return nodes;
+    }
+    
+    // 返回選中部門的節點
+    return nodes.filter(node => selectedDepartments.has(node.data.department));
+  },
+
+  getDepartmentStats: () => {
+    const { nodes } = get();
+    const stats: Record<string, number> = {};
+    
+    nodes.forEach(node => {
+      const department = node.data.department;
+      stats[department] = (stats[department] || 0) + 1;
+    });
+    
+    return stats;
   },
 }));
 

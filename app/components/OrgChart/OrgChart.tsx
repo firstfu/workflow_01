@@ -50,6 +50,9 @@ import {
 import '@xyflow/react/dist/style.css';
 import CustomNode from './CustomNode';
 import useOrgChartStore from './useOrgChartStore';
+import DepartmentIcon from './DepartmentIcon';
+import DepartmentManagerModal from './DepartmentManagerModal';
+import { getDepartmentColor, getDepartmentColorDot } from './departmentUtils';
 import { 
   ZoomIn, 
   ZoomOut, 
@@ -60,7 +63,10 @@ import {
   UserPlus,
   Settings,
   Palette,
-  Grid3x3
+  Grid3x3,
+  Filter,
+  X,
+  FolderCog
 } from 'lucide-react';
 
 const OrgChartContent = () => {
@@ -75,16 +81,33 @@ const OrgChartContent = () => {
     addEmployee,
     setAutoLayoutCallback,
     isDraggingNode,
+    departments,
+    selectedDepartments,
+    toggleDepartmentFilter,
+    clearDepartmentFilter,
+    getFilteredNodes,
+    getDepartmentStats,
   } = useOrgChartStore();
   
-  const nodes = getVisibleNodes();
-  const edges = getVisibleEdges();
+  // 先獲取可見節點，再應用部門篩選
+  const visibleNodes = getVisibleNodes();
+  const filteredNodes = selectedDepartments.size > 0 
+    ? visibleNodes.filter(node => selectedDepartments.has(node.data.department))
+    : visibleNodes;
+  
+  const nodes = filteredNodes;
+  const edges = getVisibleEdges().filter(edge => 
+    filteredNodes.some(n => n.id === edge.source) && 
+    filteredNodes.some(n => n.id === edge.target)
+  );
   
   const reactFlowInstance = useReactFlow();
   const [showGrid, setShowGrid] = useState(true);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [dragAction, setDragAction] = useState<{ sourceId: string; targetId: string; action: 'replace' | 'swap' } | null>(null);
   const [showDragModal, setShowDragModal] = useState(false);
+  const [showDepartmentFilter, setShowDepartmentFilter] = useState(false);
+  const [showDepartmentManager, setShowDepartmentManager] = useState(false);
   
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
@@ -475,6 +498,82 @@ const OrgChartContent = () => {
             
             <div className="w-px bg-gray-300" />
             
+            <div className="relative">
+              <button
+                onClick={() => setShowDepartmentFilter(!showDepartmentFilter)}
+                className={`p-2 hover:bg-gray-100 rounded-lg transition-colors group ${showDepartmentFilter ? 'bg-blue-50' : ''}`}
+                title="部門篩選"
+              >
+                <Filter className={`w-5 h-5 ${selectedDepartments.size > 0 ? 'text-blue-600' : 'text-gray-600 group-hover:text-blue-600'}`} />
+                {selectedDepartments.size > 0 && (
+                  <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {selectedDepartments.size}
+                  </div>
+                )}
+              </button>
+              
+              {showDepartmentFilter && (
+                <div className="absolute top-12 right-0 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 min-w-[280px]">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-medium text-gray-800">部門篩選</h3>
+                    {selectedDepartments.size > 0 && (
+                      <button
+                        onClick={clearDepartmentFilter}
+                        className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                      >
+                        <X className="w-3 h-3" />
+                        清除篩選
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {departments.map(dept => {
+                      const stats = getDepartmentStats();
+                      const count = stats[dept.name] || 0;
+                      const isSelected = selectedDepartments.has(dept.name);
+                      
+                      return (
+                        <button
+                          key={dept.id}
+                          onClick={() => toggleDepartmentFilter(dept.name)}
+                          className={`w-full flex items-center justify-between p-2 rounded-lg text-left hover:bg-gray-50 ${
+                            isSelected ? 'bg-blue-50 ring-1 ring-blue-200' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${getDepartmentColorDot({ ...dept, color: dept.color })}`}></div>
+                            <DepartmentIcon iconName={dept.icon} size={14} className="text-gray-600" />
+                            <span className="text-sm font-medium">{dept.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">({count})</span>
+                            {isSelected && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {departments.length === 0 && (
+                    <p className="text-sm text-gray-500 text-center py-4">尚無部門資料</p>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setShowDepartmentManager(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+              title="部門管理"
+            >
+              <FolderCog className="w-5 h-5 text-gray-600 group-hover:text-blue-600" />
+            </button>
+            
+            <div className="w-px bg-gray-300" />
+            
             <button
               onClick={handleExport}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
@@ -577,6 +676,12 @@ const OrgChartContent = () => {
           </div>
         </div>
       )}
+      
+      {/* 部門管理模態窗口 */}
+      <DepartmentManagerModal 
+        isOpen={showDepartmentManager}
+        onClose={() => setShowDepartmentManager(false)}
+      />
     </div>
   );
 };

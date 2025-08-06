@@ -8,6 +8,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Employee } from './useOrgChartStore';
+import useOrgChartStore from './useOrgChartStore';
+import { ChevronDown, Plus } from 'lucide-react';
 
 interface EditModalProps {
   isOpen: boolean;
@@ -17,12 +19,16 @@ interface EditModalProps {
 }
 
 const EditModal = ({ isOpen, employee, onSave, onCancel }: EditModalProps) => {
+  const { departments, addDepartment } = useOrgChartStore();
   const [editData, setEditData] = useState({
     name: '',
     position: '',
     department: '',
     email: '',
   });
+  const [showDepartmentDropdown, setShowDepartmentDropdown] = useState(false);
+  const [showAddDepartment, setShowAddDepartment] = useState(false);
+  const [newDepartmentName, setNewDepartmentName] = useState('');
 
   useEffect(() => {
     if (employee) {
@@ -37,6 +43,43 @@ const EditModal = ({ isOpen, employee, onSave, onCancel }: EditModalProps) => {
 
   const handleSave = () => {
     onSave(editData);
+  };
+
+  const handleDepartmentSelect = (departmentName: string) => {
+    setEditData({ ...editData, department: departmentName });
+    setShowDepartmentDropdown(false);
+  };
+
+  const handleAddNewDepartment = () => {
+    if (newDepartmentName.trim()) {
+      // 生成部門顏色和圖標（簡化版）
+      const colors = ['blue', 'green', 'purple', 'orange', 'pink', 'indigo'];
+      const icons = ['Building2', 'Users', 'Briefcase', 'Settings', 'Globe'];
+      const newDepartment = {
+        id: `dept-${Date.now()}`,
+        name: newDepartmentName.trim(),
+        color: colors[Math.floor(Math.random() * colors.length)],
+        icon: icons[Math.floor(Math.random() * icons.length)],
+      };
+      
+      addDepartment(newDepartment);
+      setEditData({ ...editData, department: newDepartmentName.trim() });
+      setNewDepartmentName('');
+      setShowAddDepartment(false);
+      setShowDepartmentDropdown(false);
+    }
+  };
+
+  const getColorClass = (colorName: string) => {
+    const colorMap: Record<string, string> = {
+      purple: 'bg-purple-100 text-purple-800',
+      blue: 'bg-blue-100 text-blue-800',
+      green: 'bg-green-100 text-green-800',
+      orange: 'bg-orange-100 text-orange-800',
+      pink: 'bg-pink-100 text-pink-800',
+      indigo: 'bg-indigo-100 text-indigo-800'
+    };
+    return colorMap[colorName] || 'bg-gray-100 text-gray-800';
   };
 
   if (!isOpen || !employee) return null;
@@ -73,16 +116,93 @@ const EditModal = ({ isOpen, employee, onSave, onCancel }: EditModalProps) => {
             />
           </div>
           
-          <div>
+          <div className="relative">
             <label className="block text-xs font-medium text-gray-700 mb-1">
               部門
             </label>
-            <input
-              type="text"
-              value={editData.department}
-              onChange={e => setEditData({ ...editData, department: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
+            <button
+              type="button"
+              onClick={() => setShowDepartmentDropdown(!showDepartmentDropdown)}
+              className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                {departments.find(d => d.name === editData.department) && (
+                  <span className={`inline-block w-3 h-3 rounded-full ${getColorClass(departments.find(d => d.name === editData.department)?.color || '').replace('text-', 'bg-').split(' ')[0]}`}></span>
+                )}
+                <span>{editData.department || '選擇部門'}</span>
+              </div>
+              <ChevronDown className="w-4 h-4 text-gray-400" />
+            </button>
+            
+            {showDepartmentDropdown && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                {departments.map((dept) => (
+                  <button
+                    key={dept.id}
+                    type="button"
+                    onClick={() => handleDepartmentSelect(dept.name)}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                  >
+                    <span className={`inline-block w-3 h-3 rounded-full bg-${dept.color}-500`}></span>
+                    <span>{dept.name}</span>
+                    {dept.description && (
+                      <span className="text-xs text-gray-500 ml-auto truncate">{dept.description}</span>
+                    )}
+                  </button>
+                ))}
+                
+                <div className="border-t border-gray-200">
+                  {!showAddDepartment ? (
+                    <button
+                      type="button"
+                      onClick={() => setShowAddDepartment(true)}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-blue-600"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>新增部門</span>
+                    </button>
+                  ) : (
+                    <div className="p-2">
+                      <input
+                        type="text"
+                        value={newDepartmentName}
+                        onChange={e => setNewDepartmentName(e.target.value)}
+                        placeholder="輸入部門名稱"
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 mb-2"
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            handleAddNewDepartment();
+                          } else if (e.key === 'Escape') {
+                            setShowAddDepartment(false);
+                            setNewDepartmentName('');
+                          }
+                        }}
+                      />
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={handleAddNewDepartment}
+                          className="flex-1 px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                        >
+                          新增
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAddDepartment(false);
+                            setNewDepartmentName('');
+                          }}
+                          className="flex-1 px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                        >
+                          取消
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           
           <div>

@@ -48,6 +48,8 @@ import { Mail, Building2, MoreVertical, Edit, Trash2, UserPlus, Move, ChevronDow
 import { Employee } from "./useOrgChartStore";
 import useOrgChartStore from "./useOrgChartStore";
 import EditModal from "./EditModal";
+import DepartmentIcon from "./DepartmentIcon";
+import { getDepartmentColor, getDepartmentBadgeClasses, getDepartmentColorDot } from "./departmentUtils";
 
 // 明確定義 CustomNode 的 Props 型別
 interface CustomNodeProps {
@@ -66,7 +68,9 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     autoLayout, 
     setIsDraggingNode,
     toggleNodeCollapse,
-    isNodeCollapsed 
+    isNodeCollapsed,
+    departments,
+    getDepartmentByName
   } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [showEditModal, setShowEditModal] = React.useState(false);
@@ -75,6 +79,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
   
   const collapsed = isNodeCollapsed(data.id);
   const hasChildren = edges.some(edge => edge.source === data.id);
+  const department = getDepartmentByName(data.department);
 
   // 添加全域 mouseup 監聽器以確保狀態正確重置
   React.useEffect(() => {
@@ -356,9 +361,25 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
           <h3 className="font-bold text-gray-900 text-base">{data.name}</h3>
           <p className="text-sm font-medium text-gray-700">{data.position}</p>
 
-          <div className="flex items-center gap-1 text-xs text-gray-500 mt-2">
-            <Building2 className="w-3 h-3" />
-            <span>{data.department}</span>
+          <div className="flex items-center justify-between mt-2">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
+                <div className={`w-2 h-2 rounded-full ${getDepartmentColorDot(department)}`}></div>
+                <DepartmentIcon 
+                  iconName={department?.icon} 
+                  size={12} 
+                  className={`${department ? getDepartmentColor(department, 'textLight') : 'text-gray-500'}`}
+                />
+              </div>
+              <span className={`text-xs font-medium ${department ? getDepartmentColor(department, 'textLight') : 'text-gray-500'}`}>
+                {data.department}
+              </span>
+            </div>
+            
+            {/* 部門標籤 */}
+            <span className={`${getDepartmentBadgeClasses(department)} text-[10px]`}>
+              {department?.name || data.department}
+            </span>
           </div>
 
           <div className="flex items-center gap-1 text-xs text-gray-500">
