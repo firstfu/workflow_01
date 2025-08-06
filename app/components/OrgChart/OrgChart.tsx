@@ -263,7 +263,7 @@ const OrgChartContent = () => {
         <MiniMap 
           className="!bg-white/90 !backdrop-blur-sm !shadow-lg !border-0 !rounded-lg"
           nodeColor={(node) => {
-            const level = (node.data as any)?.level || 1;
+            const level = (node.data as Record<string, unknown> & { level?: number })?.level || 1;
             const colors: { [key: number]: string } = {
               1: '#8b5cf6',
               2: '#3b82f6', 
