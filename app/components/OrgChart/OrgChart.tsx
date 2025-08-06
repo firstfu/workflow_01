@@ -283,10 +283,6 @@ const OrgChartContent = () => {
             strokeWidth: 2,
             stroke: '#374151',
           },
-          pathOptions: {
-            offset: 20,
-            borderRadius: 0,
-          },
         }}
       >
         <Panel position="top-left" className="bg-white/90 backdrop-blur-sm rounded-lg shadow-lg p-3 m-4">

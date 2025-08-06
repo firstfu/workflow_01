@@ -25,6 +25,7 @@ interface OrgChartState {
   addEmployee: (employee: Employee, parentId?: string) => void;
   updateEmployee: (id: string, data: Partial<Employee>) => void;
   deleteEmployee: (id: string) => void;
+  replaceNodeData: (sourceId: string, targetId: string) => void;
   
   setSelectedNode: (id: string | null) => void;
   getEmployeeById: (id: string) => Employee | undefined;
@@ -231,6 +232,48 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
         callback();
       }, 100);
     }
+  },
+
+  replaceNodeData: (sourceId, targetId) => {
+    const { nodes } = get();
+    const sourceNode = nodes.find(n => n.id === sourceId);
+    const targetNode = nodes.find(n => n.id === targetId);
+    
+    if (!sourceNode || !targetNode) return;
+    
+    // 儲存來源節點的資料
+    const sourceData = { ...sourceNode.data };
+    
+    // 更新節點：目標節點取代為來源節點的資料，來源節點變成空的
+    const updatedNodes = nodes.map(node => {
+      if (node.id === targetId) {
+        // 目標節點獲得來源節點的資料，但保持自己的 id
+        return {
+          ...node,
+          data: {
+            ...sourceData,
+            id: targetId,
+          }
+        };
+      }
+      if (node.id === sourceId) {
+        // 來源節點變成空的員工資料
+        return {
+          ...node,
+          data: {
+            id: sourceId,
+            name: '空職位',
+            position: '待分配',
+            department: '待分配',
+            email: '',
+            level: sourceData.level, // 保持原有層級
+          }
+        };
+      }
+      return node;
+    });
+    
+    set({ nodes: updatedNodes });
   },
 }));
 

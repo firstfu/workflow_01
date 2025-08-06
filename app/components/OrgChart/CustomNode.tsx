@@ -13,9 +13,11 @@ interface CustomNodeProps {
 }
 
 const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
-  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes, autoLayout } = useOrgChartStore();
+  const { setSelectedNode, deleteEmployee, updateEmployee, addEmployee, nodes, autoLayout, replaceNodeData } = useOrgChartStore();
   const [showMenu, setShowMenu] = React.useState(false);
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isDragging, setIsDragging] = React.useState(false);
+  const [dragOver, setDragOver] = React.useState(false);
   const [editData, setEditData] = React.useState({
     name: data.name,
     position: data.position,
@@ -80,6 +82,38 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     setShowMenu(false);
   };
 
+  // 拖拽處理函數
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('nodeId', data.id);
+    e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragOver(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const sourceId = e.dataTransfer.getData('nodeId');
+    
+    if (sourceId && sourceId !== data.id) {
+      replaceNodeData(sourceId, data.id);
+    }
+    
+    setDragOver(false);
+  };
+
   const levelColors = {
     1: 'from-purple-500 to-pink-500',
     2: 'from-blue-500 to-cyan-500',
@@ -93,8 +127,14 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     <div
       className={`relative transition-all duration-300 ${
         selected ? 'scale-105' : ''
-      }`}
+      } ${isDragging ? 'opacity-50' : ''} ${dragOver ? 'ring-2 ring-blue-400' : ''}`}
       onClick={!isEditing ? handleNodeClick : undefined}
+      draggable={!isEditing}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     >
       <Handle
         type="target"
