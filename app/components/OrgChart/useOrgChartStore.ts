@@ -174,11 +174,33 @@ const useOrgChartStore = create<OrgChartState>((set, get) => ({
   },
   
   deleteEmployee: (id) => {
-    const nodes = get().nodes.filter((node) => node.id !== id);
-    const edges = get().edges.filter(
-      (edge) => edge.source !== id && edge.target !== id
+    const { nodes, edges } = get();
+    
+    // 遞歸找出所有需要刪除的子節點
+    const findAllChildren = (nodeId: string): string[] => {
+      const children = edges
+        .filter(edge => edge.source === nodeId)
+        .map(edge => edge.target);
+      
+      const allDescendants = [nodeId];
+      children.forEach(childId => {
+        allDescendants.push(...findAllChildren(childId));
+      });
+      
+      return allDescendants;
+    };
+    
+    const nodesToDelete = findAllChildren(id);
+    
+    // 刪除所有相關節點
+    const filteredNodes = nodes.filter((node) => !nodesToDelete.includes(node.id));
+    
+    // 刪除所有相關連線
+    const filteredEdges = edges.filter(
+      (edge) => !nodesToDelete.includes(edge.source) && !nodesToDelete.includes(edge.target)
     );
-    set({ nodes, edges });
+    
+    set({ nodes: filteredNodes, edges: filteredEdges });
   },
   
   setSelectedNode: (id) => set({ selectedNode: id }),
