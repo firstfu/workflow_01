@@ -1,17 +1,17 @@
 /**
  * 職位描述生成器元件
- * 
+ *
  * 為選中的員工生成專業的職位描述，包括：
  * - 員工選擇介面
  * - 職位描述生成
  * - 結果編輯和匯出功能
  */
 
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { FileText, User, Edit3, Download, Loader2, AlertCircle } from 'lucide-react';
-import useOrgChartStore, { type Employee } from '../OrgChart/useOrgChartStore';
+import React, { useState } from "react";
+import { FileText, User, Edit3, Download, Loader2, AlertCircle } from "lucide-react";
+import useOrgChartStore from "../OrgChart/useOrgChartStore";
 
 interface JobDescriptionResult {
   employee: {
@@ -25,10 +25,10 @@ interface JobDescriptionResult {
 
 const JobDescriptionGenerator = () => {
   const { nodes, selectedNode } = useOrgChartStore();
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>(selectedNode || '');
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>(selectedNode || "");
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<JobDescriptionResult | null>(null);
-  const [editedDescription, setEditedDescription] = useState('');
+  const [editedDescription, setEditedDescription] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -43,7 +43,7 @@ const JobDescriptionGenerator = () => {
 
   const handleGenerate = async () => {
     if (!selectedEmployee) {
-      setError('請選擇一位員工');
+      setError("請選擇一位員工");
       return;
     }
 
@@ -51,10 +51,10 @@ const JobDescriptionGenerator = () => {
     setError(null);
 
     try {
-      const response = await fetch('/api/llm/job-description', {
-        method: 'POST',
+      const response = await fetch("/api/llm/job-description", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           employee: selectedEmployee,
@@ -64,13 +64,13 @@ const JobDescriptionGenerator = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || '職位描述生成失敗');
+        throw new Error(data.error || "職位描述生成失敗");
       }
 
       setResult(data);
       setEditedDescription(data.jobDescription);
     } catch (err) {
-      setError(err instanceof Error ? err.message : '發生未知錯誤');
+      setError(err instanceof Error ? err.message : "發生未知錯誤");
     } finally {
       setIsGenerating(false);
     }
@@ -81,14 +81,14 @@ const JobDescriptionGenerator = () => {
 
     const content = `${result.employee.name} - ${result.employee.position}
 部門：${result.employee.department}
-生成時間：${new Date(result.timestamp).toLocaleString('zh-TW')}
+生成時間：${new Date(result.timestamp).toLocaleString("zh-TW")}
 
 ${isEditing ? editedDescription : result.jobDescription}
 `;
 
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = url;
     link.download = `職位描述-${result.employee.name}-${result.employee.position}.txt`;
     document.body.appendChild(link);
@@ -108,7 +108,7 @@ ${isEditing ? editedDescription : result.jobDescription}
 
   const handleCancelEdit = () => {
     setIsEditing(false);
-    setEditedDescription(result?.jobDescription || '');
+    setEditedDescription(result?.jobDescription || "");
   };
 
   return (
@@ -127,23 +127,21 @@ ${isEditing ? editedDescription : result.jobDescription}
 
       {/* 員工選擇 */}
       <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          選擇員工
-        </label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">選擇員工</label>
         <div className="flex gap-3">
           <select
             value={selectedEmployeeId}
-            onChange={(e) => handleEmployeeChange(e.target.value)}
+            onChange={e => handleEmployeeChange(e.target.value)}
             className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           >
             <option value="">請選擇員工...</option>
-            {nodes.map((node) => (
+            {nodes.map(node => (
               <option key={node.id} value={node.id}>
                 {node.data.name} - {node.data.position} ({node.data.department})
               </option>
             ))}
           </select>
-          
+
           <button
             onClick={handleGenerate}
             disabled={!selectedEmployee || isGenerating}
@@ -213,9 +211,7 @@ ${isEditing ? editedDescription : result.jobDescription}
               {result.employee.name} 的職位描述
             </h4>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-500">
-                {new Date(result.timestamp).toLocaleString('zh-TW')}
-              </span>
+              <span className="text-sm text-gray-500">{new Date(result.timestamp).toLocaleString("zh-TW")}</span>
               <button
                 onClick={isEditing ? handleSaveEdit : handleEdit}
                 className="p-2 text-gray-600 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
@@ -232,12 +228,12 @@ ${isEditing ? editedDescription : result.jobDescription}
               </button>
             </div>
           </div>
-          
+
           {isEditing ? (
             <div className="space-y-3">
               <textarea
                 value={editedDescription}
-                onChange={(e) => setEditedDescription(e.target.value)}
+                onChange={e => setEditedDescription(e.target.value)}
                 className="w-full h-64 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
                 placeholder="編輯職位描述..."
               />
@@ -248,20 +244,14 @@ ${isEditing ? editedDescription : result.jobDescription}
                 >
                   取消
                 </button>
-                <button
-                  onClick={handleSaveEdit}
-                  className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
-                >
+                <button onClick={handleSaveEdit} className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
                   儲存
                 </button>
               </div>
             </div>
           ) : (
             <div className="bg-gray-50 rounded-lg p-4 border">
-              <div 
-                className="prose prose-sm max-w-none text-gray-800 whitespace-pre-line"
-                style={{ lineHeight: '1.6' }}
-              >
+              <div className="prose prose-sm max-w-none text-gray-800 whitespace-pre-line" style={{ lineHeight: "1.6" }}>
                 {editedDescription}
               </div>
             </div>
@@ -276,9 +266,7 @@ ${isEditing ? editedDescription : result.jobDescription}
             <FileText className="w-8 h-8 text-gray-400" />
           </div>
           <h4 className="text-lg font-medium text-gray-900 mb-2">選擇員工並生成職位描述</h4>
-          <p className="text-gray-600 mb-4">
-            AI 將根據員工的職位、部門和層級生成專業的職位描述
-          </p>
+          <p className="text-gray-600 mb-4">AI 將根據員工的職位、部門和層級生成專業的職位描述</p>
           <ul className="text-sm text-gray-500 space-y-1 text-left max-w-md mx-auto">
             <li>• 職位概述與責任</li>
             <li>• 技能與資格要求</li>

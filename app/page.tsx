@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gray-50 flex">
       {/* 組織圖主要區域 */}
-      <div className={`transition-all duration-300 ${showLLMPanel ? 'w-1/2' : 'w-full'}`}>
+      <div className={`transition-all duration-300 ${showLLMPanel ? 'w-2/3' : 'w-full'}`}>
         <OrgChart />
         
         {/* LLM 功能切換按鈕 */}
