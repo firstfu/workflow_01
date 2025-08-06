@@ -150,51 +150,35 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     dragPreview.innerHTML = `
       <div style="
         background: white;
-        border-radius: 12px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        padding: 12px;
-        min-width: 200px;
+        border-radius: 10px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        padding: 10px;
+        min-width: 160px;
         border: 2px solid #60a5fa;
         opacity: 1;
-        transform: scale(0.85);
+        transform: scale(0.75);
         font-family: ui-sans-serif, system-ui, sans-serif;
       ">
-        <div style="display: flex; align-items: start; justify-content: space-between; margin-bottom: 12px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="
-              width: 36px;
-              height: 36px;
-              border-radius: 50%;
-              background: linear-gradient(to bottom right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              color: white;
-              font-weight: bold;
-              font-size: 14px;
-              box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            ">
-              ${data.name.charAt(0).toUpperCase()}
-            </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+          <div style="
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          ">
+            ${data.name.charAt(0).toUpperCase()}
           </div>
         </div>
-        <div style="space-y: 4px;">
-          <h3 style="font-weight: bold; color: #111827; font-size: 16px; margin: 0;">${data.name}</h3>
-          <p style="font-size: 14px; font-weight: 500; color: #374151; margin: 4px 0;">${data.position}</p>
-          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; margin-top: 8px;">
-            <span>${data.department}</span>
-          </div>
-          <div style="margin-top: 12px;">
-            <span style="
-              display: inline-block;
-              padding: 4px 8px;
-              font-size: 12px;
-              font-weight: 500;
-              border-radius: 9999px;
-              background: linear-gradient(to right, ${data.level === 1 ? '#8b5cf6, #ec4899' : data.level === 2 ? '#3b82f6, #06b6d4' : data.level === 3 ? '#10b981, #059669' : '#f59e0b, #eab308'});
-              color: white;
-            ">Level ${data.level}</span>
-          </div>
+        <div>
+          <h3 style="font-weight: bold; color: #111827; font-size: 13px; margin: 0 0 2px 0;">${data.name}</h3>
+          <p style="font-size: 11px; font-weight: 500; color: #6b7280; margin: 0;">${data.position}</p>
         </div>
       </div>
     `;
@@ -206,7 +190,7 @@ const CustomNode = memo(({ data, selected }: CustomNodeProps) => {
     document.body.appendChild(dragPreview);
     
     // 設置拖曳影像
-    e.dataTransfer.setDragImage(dragPreview, 100, 75);
+    e.dataTransfer.setDragImage(dragPreview, 60, 40);
     
     // 清理預覽元素
     setTimeout(() => {
